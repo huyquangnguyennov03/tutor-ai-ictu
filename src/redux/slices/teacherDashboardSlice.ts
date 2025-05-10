@@ -135,7 +135,7 @@ export const fetchDashboardData = createAsyncThunk(
   'teacherDashboard/fetchDashboardData',
   async ({ courseId, semesterId }: { courseId: string; semesterId: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`https://run.mocky.io/v3/fa7702b6-e541-4328-9ddf-61b192f19680`, {
+      const response = await axios.get(`https://run.mocky.io/v3/9742ba87-419b-4b45-99ab-69ba0c5e5cf1`, {
         params: { courseId, semesterId }
       });
       return response.data;

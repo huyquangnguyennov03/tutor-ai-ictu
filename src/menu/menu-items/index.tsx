@@ -7,7 +7,7 @@ import cdashboard from "@/menu/menu-items/cdashboard"
 
 
 const menuItems = {
-  items: [dashboard, LearningProcess, cdashboard]
+  items: [dashboard, cdashboard]
 };
 
 export default menuItems;

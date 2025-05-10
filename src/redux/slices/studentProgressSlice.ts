@@ -21,7 +21,7 @@ export interface Suggestion {
   id: number;
   title: string;
   content: string;
-  type: 'info' | 'warning' | 'success';
+  type: 'info' | 'warning' | 'success' | 'error';
 }
 
 export interface StudentInfo {
@@ -62,13 +62,30 @@ const initialState: StudentProgressState = {
   error: null
 };
 
-// Thunk Action để lấy dữ liệu từ API
+// Thunk Action để lấy dữ liệu từ API dựa trên studentId
 export const fetchStudentProgress = createAsyncThunk(
   'studentProgress/fetchStudentProgress',
-  async (_, { rejectWithValue }) => {
+  async (studentId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get('https://run.mocky.io/v3/80fe6b83-834f-4b00-88d4-f5e0b95851e1');
-      return response.data;
+      // Trong môi trường thực tế, URL sẽ bao gồm studentId như một tham số hoặc một phần của đường dẫn
+      const response = await axios.get('https://run.mocky.io/v3/6944656a-f738-4f43-9897-420ed18e2706');
+
+      // Không lấy studentId từ localStorage, luôn sử dụng studentId được truyền vào
+      // Cần đảm bảo studentId đúng định dạng như trong data API
+      // Ví dụ: Chuyển '20170001' thành '21520001' nếu cần
+      const formattedStudentId = studentId.startsWith('21520')
+        ? studentId // Nếu đã đúng định dạng thì giữ nguyên
+        : `21520${studentId.substring(studentId.length - 3)}`; // Nếu không, chuyển đổi
+
+      console.log(`Looking for student with ID: ${formattedStudentId}`);
+
+      // Giả lập việc lọc dữ liệu theo studentId từ phản hồi API
+      if (response.data && response.data[formattedStudentId]) {
+        return response.data[formattedStudentId];
+      } else {
+        console.error(`Student with ID ${formattedStudentId} not found in data:`, Object.keys(response.data));
+        return rejectWithValue(`Không tìm thấy thông tin sinh viên với MSSV: ${studentId}`);
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Đã xảy ra lỗi khi tải dữ liệu';
       return rejectWithValue(errorMessage);

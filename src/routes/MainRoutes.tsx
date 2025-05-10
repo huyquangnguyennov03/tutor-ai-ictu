@@ -28,7 +28,7 @@ const MainRoutes = {
       ],
     },
     {
-      path: "tien-do-hoc-tap",
+      path: "tien-do-hoc-tap/:studentId",
       element: <LearningProcess />,
     },
     {

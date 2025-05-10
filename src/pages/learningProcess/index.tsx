@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { Container, Typography, Box, CssBaseline, ThemeProvider, createTheme, Alert, CircularProgress } from '@mui/material';
-import { Provider, useDispatch, useSelector } from 'react-redux';
-import { store } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchStudentProgress, selectStatus, selectErrorMessage } from '@/redux/slices/studentProgressSlice';
 import StudentInfo from './StudentInfo';
 import ChapterProgress from './ChapterProgress';
 import SummaryStats from './SummaryStats';
 import ErrorAnalysis from './ErrorAnalysis';
 import ImprovementSuggestions from './ImprovementSuggestions';
-import { AppDispatch } from '@/redux/store'; // Import AppDispatch type
+import { AppDispatch } from '@/redux/store';
+import { useParams } from 'react-router-dom';
 
 // Create a theme instance
 const theme = createTheme({
@@ -39,20 +39,25 @@ const useAppDispatch = () => useDispatch<AppDispatch>();
 
 // Dashboard component that uses Redux
 const Dashboard: React.FC = () => {
-  const dispatch = useAppDispatch(); // Use the typed dispatch
+  const dispatch = useAppDispatch();
   const status = useSelector(selectStatus);
   const errorMessage = useSelector(selectErrorMessage);
 
+  // Lấy MSSV từ URL parameter
+  const { studentId } = useParams<{ studentId: string }>();
+
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchStudentProgress());
+    // Reset status or add a dependency to force refetch when studentId changes
+    if (studentId) {
+      // Always fetch when studentId changes, not just when status is idle
+      dispatch(fetchStudentProgress(studentId));
     }
-  }, [dispatch, status]);
+  }, [dispatch, studentId]); // Remove status dependency to ensure fetching on studentId change
 
   return (
     <Box sx={{ padding: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Bảng Tiến Độ Học Tập
+        Bảng Tiến Độ Học Tập {studentId && `- MSSV: ${studentId}`}
       </Typography>
 
       {status === 'loading' && (
@@ -83,12 +88,12 @@ const Dashboard: React.FC = () => {
 // Main component with Redux Provider
 const Index: React.FC = () => {
   return (
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container maxWidth="lg">
         <Dashboard />
-      </ThemeProvider>
-    </Provider>
+      </Container>
+    </ThemeProvider>
   );
 };
 
