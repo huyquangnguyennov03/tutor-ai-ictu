@@ -8,6 +8,7 @@ import Dashboard from "@/layout/Dashboard"
 const DashboardDefault = Loadable(lazy(() => import("@/pages/dashboard/index")))
 const LearningProcess = Loadable(lazy(() => import("@/pages/learningProcess/")))
 const CourseProgress = Loadable(lazy(() => import("@/pages/CDashboard/Index")))
+const Chat = Loadable(lazy(() => import("@/pages/chat/Index")))
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -34,6 +35,10 @@ const MainRoutes = {
     {
       path: "tong-quan-tien-do",
       element: <CourseProgress />,
+    },
+    {
+      path: "chat",
+      element: <Chat />,
     }
   ],
 }

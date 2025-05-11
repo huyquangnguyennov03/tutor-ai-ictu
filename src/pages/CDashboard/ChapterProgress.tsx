@@ -234,7 +234,7 @@ const ChapterProgress: React.FC = () => {
                       </Box>
                     </TableCell>
                     <TableCell>{chapter.averageScore.toFixed(1)}</TableCell>
-                    <TableCell>{chapter.studentsCompleted}/{chapter.totalStudents}</TableCell>
+                    <TableCell>{chapter.studentsCompleted}{chapter.totalStudents}</TableCell>
                     <TableCell>{chapter.estimatedTime}</TableCell>
                   </TableRow>
                 ))}
