@@ -90,7 +90,7 @@ const Index: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Dashboard />
       </Container>
     </ThemeProvider>

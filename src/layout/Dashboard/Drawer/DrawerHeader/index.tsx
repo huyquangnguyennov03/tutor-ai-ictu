@@ -1,7 +1,7 @@
 // project import
 import DrawerHeaderStyled from './DrawerHeaderStyled';
 import Logo from '@/components/logo';
-import miniLogo from "@/assets/images/miniLogo.svg";
+import miniLogo from "@/assets/images/logoictu.png";
 import Box from "@mui/material/Box"
 import { ButtonBase } from "@mui/material"
 import { Link } from "react-router-dom"
