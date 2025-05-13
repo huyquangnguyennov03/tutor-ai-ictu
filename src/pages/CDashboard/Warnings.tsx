@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from "react"
 import {
   Box,
   Typography,
@@ -12,12 +12,16 @@ import {
   selectAssignments,
   sendReminder
 } from '@/redux/slices/teacherDashboardSlice';
+import TopStudentsDialog from './TopStudentsDialog';
+import StudentSubmissionDialog from './StudentSubmissionDialog';
 
 const Warnings = () => {
   // Get data from Redux store instead of using mock data
   const studentWarnings = useSelector(selectWarnings);
   const topStudents = useSelector(selectTopStudents);
   const assignments = useSelector(selectAssignments);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isSubmissionDialogOpen, setSubmissionDialogOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>(); // Use typed dispatch
 
   // Get the upcoming assignment with nearest deadline
@@ -26,8 +30,12 @@ const Warnings = () => {
 
   // Functions to handle button clicks (connected with Redux actions)
   const handleViewDetails = (mssv: string): void => {
-    console.log(`Viewing details for student ${mssv}`);
-    // Could dispatch a Redux action here if you add one for this functionality
+    if (mssv.startsWith('assignment-')) {
+      setSubmissionDialogOpen(true);
+    } else {
+      console.log(`Viewing details for student ${mssv}`);
+      // Hoặc xử lý riêng nếu cần
+    }
   };
 
   const handleContactStudent = (mssv: string, priority: 'khẩn cấp' | 'cảnh báo' | 'thông tin'): void => {
@@ -49,6 +57,7 @@ const Warnings = () => {
   const handleViewAllTopStudents = (): void => {
     console.log('Viewing all top students');
     // Could dispatch a Redux action here if you add one for this functionality
+    setDialogOpen(true);
   };
 
   // Handle the case when there are no warnings yet
@@ -333,6 +342,11 @@ const Warnings = () => {
               </Button>
             </Box>
           </Box>
+          <StudentSubmissionDialog
+            open={isSubmissionDialogOpen}
+            onClose={() => setSubmissionDialogOpen(false)}
+            assignment={upcomingAssignment}
+          />
         </Box>
       )}
 
@@ -392,6 +406,12 @@ const Warnings = () => {
           </Box>
         </Box>
       )}
+
+      <TopStudentsDialog
+        open={isDialogOpen}
+        onClose={() => setDialogOpen(false)}
+        students={topStudents}
+      />
     </Box>
   );
 };
