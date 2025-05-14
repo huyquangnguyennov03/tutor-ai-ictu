@@ -10,7 +10,7 @@ const icons = {
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
 const chat: MenuItem = {
-  id: 'group-chat',
+  id: 'chat',
   title: '',
   type: 'group',
   children: [

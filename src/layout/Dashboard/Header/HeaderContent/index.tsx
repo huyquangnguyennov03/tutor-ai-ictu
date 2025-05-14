@@ -4,6 +4,8 @@ import { useTheme } from '@mui/material/styles';
 import Search from './Search';
 import Profile from './Profile';
 import MobileSection from './MobileSection';
+import Notification from './Notification'
+import ChatNotification from "./ChatNotification"
 
 const HeaderContent: React.FC = () => {
   const theme = useTheme();
@@ -13,6 +15,8 @@ const HeaderContent: React.FC = () => {
     <Box sx={{ width: '100%' }} display="flex" alignItems="center">
       {!downLG && <Search />}
       {downLG && <Box sx={{ width: '100%', ml: 1 }} />}
+      <Notification />
+      <ChatNotification />
       {!downLG && <Profile />}
       {downLG && <MobileSection />}
     </Box>

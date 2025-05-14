@@ -6,4 +6,10 @@ export const API_ENDPOINTS = {
   USER: {
     FETCH_USERS: "/users",
   },
+  COURSES:{
+    GET_COURSES:"/api/courses",
+  },
+  SEMESTERS:{
+    GET_SEMESTERS:"/api/semesters",
+  }
 }

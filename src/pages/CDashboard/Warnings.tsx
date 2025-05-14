@@ -345,7 +345,6 @@ const Warnings = () => {
           <StudentSubmissionDialog
             open={isSubmissionDialogOpen}
             onClose={() => setSubmissionDialogOpen(false)}
-            assignment={upcomingAssignment}
           />
         </Box>
       )}

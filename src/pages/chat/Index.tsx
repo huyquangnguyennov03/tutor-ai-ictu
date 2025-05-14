@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ Thêm useEffect
 import {
   Grid,
   Box,
@@ -13,7 +13,6 @@ import StudentProfile from './StudentProfile';
 import ChatToolbar from './ChatToolbar';
 import { Student, Message, StudentProgress } from './types';
 
-// Custom theme with Vietnamese-friendly font stack
 const theme = createTheme({
   palette: {
     primary: {
@@ -66,7 +65,6 @@ const theme = createTheme({
   },
 });
 
-// Sample data
 const sampleStudents: Student[] = [
   { id: '22520001', name: 'Nguyễn Văn A', status: 'online' },
   { id: '22520002', name: 'Trần Thị B', status: 'offline' },
@@ -120,10 +118,15 @@ const Index: React.FC = () => {
   const [isAITutorEnabled, setIsAITutorEnabled] = useState<boolean>(false);
   const [currentClass, setCurrentClass] = useState<string>("C Programming - C01");
 
+  // ✅ Scroll về top khi component mount
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    });
+  }, []);
+
   const handleSelectStudent = (student: Student) => {
     setSelectedStudent(student);
-    // Trong thực tế, bạn sẽ tải tin nhắn cho sinh viên được chọn từ API
-    // setMessages([]); // Reset messages
   };
 
   const handleSendMessage = (content: string) => {
@@ -139,7 +142,6 @@ const Index: React.FC = () => {
 
     setMessages([...messages, newMessage]);
 
-    // Simulating student response (only for demo)
     if (content.includes('?')) {
       setTimeout(() => {
         const studentResponse: Message = {
@@ -149,11 +151,10 @@ const Index: React.FC = () => {
           content: 'Vâng thầy, em sẽ làm theo hướng dẫn của thầy ạ.',
           timestamp: new Date().toISOString(),
         };
-        setMessages(prevMessages => [...prevMessages, studentResponse]);
+        setMessages(prev => [...prev, studentResponse]);
       }, 2000);
     }
 
-    // If AI Tutor is enabled, simulate AI response
     if (isAITutorEnabled && Math.random() > 0.5) {
       setTimeout(() => {
         const aiResponse: Message = {
@@ -163,7 +164,7 @@ const Index: React.FC = () => {
           content: 'Tôi nhận thấy đây là một lỗi phổ biến liên quan đến quản lý bộ nhớ. Có thể bổ sung thêm kiểm tra NULL sau khi sử dụng malloc để tránh các lỗi không mong muốn.',
           timestamp: new Date().toISOString(),
         };
-        setMessages(prevMessages => [...prevMessages, aiResponse]);
+        setMessages(prev => [...prev, aiResponse]);
       }, 3500);
     }
   };
@@ -171,7 +172,6 @@ const Index: React.FC = () => {
   const handleToggleAITutor = () => {
     setIsAITutorEnabled(!isAITutorEnabled);
 
-    // Gửi thông báo khi bật/tắt AI Tutor
     if (!isAITutorEnabled) {
       const aiMessage: Message = {
         id: `msg-${Date.now()}`,
@@ -180,28 +180,28 @@ const Index: React.FC = () => {
         content: 'AI Tutor đã được kích hoạt. Tôi sẽ theo dõi cuộc trò chuyện và cung cấp gợi ý khi cần thiết.',
         timestamp: new Date().toISOString(),
       };
-      setMessages(prevMessages => [...prevMessages, aiMessage]);
+      setMessages(prev => [...prev, aiMessage]);
     }
   };
 
   const handleClassChange = (className: string) => {
     setCurrentClass(className);
-    // In a real app, you would load students, messages, etc. for this class
   };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: 'background.default' }}>
-        <ChatToolbar
-          currentClass={currentClass}
-          onClassChange={handleClassChange}
-        />
+      <Box sx={{ display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ mb: 1 }}>
+            <ChatToolbar
+              currentClass={currentClass}
+              onClassChange={handleClassChange}
+            />
+          </Box>
 
-        <Box sx={{ flexGrow: 1, overflow: 'hidden', p: 3 }}>
-          <Grid container spacing={3} sx={{ height: '100%' }}>
-            {/* Student List */}
-            <Grid item xs={12} md={3} sx={{ height: '100%' }}>
+          <Grid container spacing={3} sx={{ height: 'calc(100vh - 120px)' }}>
+            <Grid item xs={12} md={3} sx={{ height: '96%' }}>
               <Paper sx={{ height: '100%', overflow: 'hidden' }}>
                 <StudentList
                   students={sampleStudents}
@@ -211,8 +211,7 @@ const Index: React.FC = () => {
               </Paper>
             </Grid>
 
-            {/* Chat Box */}
-            <Grid item xs={12} md={6} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={6} sx={{ height: '96%' }}>
               <ChatBox
                 className={currentClass}
                 selectedStudent={selectedStudent}
@@ -223,8 +222,7 @@ const Index: React.FC = () => {
               />
             </Grid>
 
-            {/* Student Profile */}
-            <Grid item xs={12} md={3} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={3} sx={{ height: '96%' }}>
               {selectedStudent && (
                 <StudentProfile
                   student={selectedStudent}

@@ -57,13 +57,13 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ student, progress }) =>
     <Paper
       elevation={0}
       sx={{
-        height: '100%',
+        height: '100%', // Giữ height 100% để lấp đầy container cha
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 2,
         border: '1px solid rgba(0, 0, 0, 0.08)',
-        overflow: 'hidden',
-        maxHeight: '100vh'
+        overflow: 'hidden'
+        // Đã xóa maxHeight: '100vh' để đảm bảo chiều cao đồng đều với các component khác
       }}
     >
       {/* Header - Cố định ở trên */}

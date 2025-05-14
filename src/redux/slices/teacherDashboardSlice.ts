@@ -13,6 +13,21 @@ export interface Student {
   active?: boolean;
 }
 
+// Thêm interface cho sinh viên nộp/chưa nộp bài tập
+export interface StudentSubmission {
+  mssv: string;
+  name: string;
+  progress: number;
+  score: string;
+  status: 'ĐẠT CHỈ TIÊU' | 'KHÁ' | 'CẦN CẢI THIỆN' | 'NGUY HIỂM';
+}
+
+export interface AssignmentSubmission {
+  name: string;
+  studentsSubmitted: StudentSubmission[];
+  studentsNotSubmitted: StudentSubmission[];
+}
+
 export interface Chapter {
   id: number;
   name: string;
@@ -99,6 +114,9 @@ export interface TeacherDashboardState {
   selectedTab: number;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  // Thêm state mới cho danh sách nộp bài tập
+  currentAssignmentSubmission: AssignmentSubmission | null;
+  assignmentSubmissionStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
 // Initial state
@@ -127,7 +145,10 @@ const initialState: TeacherDashboardState = {
   currentSemester: 'SUM2024',
   selectedTab: 0,
   status: 'idle',
-  error: null
+  error: null,
+  // Khởi tạo state mới
+  currentAssignmentSubmission: null,
+  assignmentSubmissionStatus: 'idle'
 };
 
 // Async thunk for fetching dashboard data
@@ -135,12 +156,30 @@ export const fetchDashboardData = createAsyncThunk(
   'teacherDashboard/fetchDashboardData',
   async ({ courseId, semesterId }: { courseId: string; semesterId: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`https://run.mocky.io/v3/9742ba87-419b-4b45-99ab-69ba0c5e5cf1`, {
+      const response = await axios.get(`https://run.mocky.io/v3/bc4357b0-ea70-4f62-82d6-c8d8414208a9`, {
         params: { courseId, semesterId }
       });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Không thể tải dữ liệu');
+    }
+  }
+);
+
+// Async thunk cho việc lấy danh sách sinh viên đã nộp/chưa nộp bài tập
+export const fetchAssignmentSubmission = createAsyncThunk(
+  'teacherDashboard/fetchAssignmentSubmission',
+  async (assignmentName: string, { rejectWithValue }) => {
+    try {
+      // Sử dụng API thực tế thay vì dữ liệu cứng
+      const response = await axios.get(`https://run.mocky.io/v3/bc4357b0-ea70-4f62-82d6-c8d8414208a9`, {
+        params: { assignmentName }
+      });
+
+      // Trả về dữ liệu từ API
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Không thể tải dữ liệu bài tập');
     }
   }
 );
@@ -157,6 +196,23 @@ export const sendReminder = createAsyncThunk(
       return { success: true, assignmentName };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Không thể gửi nhắc nhở');
+    }
+  }
+);
+
+// Async thunk for reminder to specific student
+export const sendReminderToStudent = createAsyncThunk(
+  'teacherDashboard/sendReminderToStudent',
+  async ({ assignmentName, mssv }: { assignmentName: string; mssv: string }, { rejectWithValue }) => {
+    try {
+      // In a real app, this would send data to the API
+      const response = await axios.post(`https://run.mocky.io/v3/ab3ef706-a743-4f6d-aa9c-4663e0ee364f`, {
+        assignmentName,
+        mssv
+      });
+      return { success: true, assignmentName, mssv };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Không thể gửi nhắc nhở cho sinh viên');
     }
   }
 );
@@ -232,8 +288,23 @@ const teacherDashboardSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload || 'Không thể tải dữ liệu';
       })
+      // Thêm xử lý cho fetchAssignmentSubmission
+      .addCase(fetchAssignmentSubmission.pending, (state) => {
+        state.assignmentSubmissionStatus = 'loading';
+      })
+      .addCase(fetchAssignmentSubmission.fulfilled, (state, action: PayloadAction<AssignmentSubmission>) => {
+        state.assignmentSubmissionStatus = 'succeeded';
+        state.currentAssignmentSubmission = action.payload;
+      })
+      .addCase(fetchAssignmentSubmission.rejected, (state, action: PayloadAction<any>) => {
+        state.assignmentSubmissionStatus = 'failed';
+        state.error = action.payload || 'Không thể tải dữ liệu bài tập';
+      })
       .addCase(sendReminder.fulfilled, (state, action) => {
         // Có thể cập nhật trạng thái gửi nhắc nhở nếu cần
+      })
+      .addCase(sendReminderToStudent.fulfilled, (state, action) => {
+        // Có thể cập nhật trạng thái gửi nhắc nhở cho sinh viên nếu cần
       })
       .addCase(extendDeadline.fulfilled, (state, action: PayloadAction<{ assignmentName: string }>) => {
         const assignmentIndex = state.assignments.findIndex(
@@ -264,7 +335,10 @@ const teacherDashboardSlice = createSlice({
     selectCurrentSemester: (state) => state.currentSemester,
     selectSelectedTab: (state) => state.selectedTab,
     selectStatus: (state) => state.status,
-    selectError: (state) => state.error
+    selectError: (state) => state.error,
+    // Thêm selectors mới
+    selectCurrentAssignmentSubmission: (state) => state.currentAssignmentSubmission,
+    selectAssignmentSubmissionStatus: (state) => state.assignmentSubmissionStatus
   }
 });
 
@@ -293,7 +367,10 @@ export const {
   selectCurrentSemester,
   selectSelectedTab,
   selectStatus,
-  selectError
+  selectError,
+  // Export selectors mới
+  selectCurrentAssignmentSubmission,
+  selectAssignmentSubmissionStatus
 } = teacherDashboardSlice.selectors;
 
 // Export reducer
