@@ -9,7 +9,8 @@ export const API_ENDPOINTS = {
   COURSES:{
     GET_COURSES:"/api/courses",
   },
-  SEMESTERS:{
-    GET_SEMESTERS:"/api/semesters",
+  STATISTICS:{
+    GET_SEMESTERS:"https://run.mocky.io/v3/6944656a-f738-4f43-9897-420ed18e2706",
+    GET_USER_STATS: "https://run.mocky.io/v3/6944656a-f738-4f43-9897-420ed18e2706"
   }
 }

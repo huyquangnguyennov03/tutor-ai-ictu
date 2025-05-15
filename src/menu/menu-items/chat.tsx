@@ -20,7 +20,7 @@ const chat: MenuItem = {
       type: 'item',
       url: '/chat',
       icon: icons.MessageOutlined,
-      breadcrumbs: false
+      breadcrumbs: true
     }
   ]
 };

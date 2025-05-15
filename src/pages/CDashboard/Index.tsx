@@ -4,13 +4,11 @@ import {
   createTheme,
   CssBaseline,
   Box,
-  Container,
   Paper,
   Tabs,
   Tab,
   CircularProgress,
-  Alert,
-  Typography
+  Alert
 } from '@mui/material';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store, AppDispatch } from '@/redux/store';
@@ -74,51 +72,44 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Bảng điều khiển giảng viên
-          </Typography>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, p: 2, overflow: 'auto' }}>
+        <CDashboardHeader />
+        <CDashboardSummary />
 
-          <CDashboardHeader />
-          <CDashboardSummary />
+        <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Tabs
+            value={tabValue}
+            onChange={(e, v) => dispatch(setSelectedTab(v))}
+            variant="fullWidth"
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              backgroundColor: '#f5f5f5',
+              '& .Mui-selected': {
+                fontWeight: 'bold',
+                color: 'primary.main',
+              },
+            }}
+          >
+            <Tab label="Danh sách sinh viên" />
+            <Tab label="Tiến độ theo chương" />
+            <Tab label="Bài tập & Nộp bài" />
+            <Tab label="Cảnh báo & Nhắc nhở" />
+          </Tabs>
 
-          <Paper sx={{ mb: 4 }}>
-            <Tabs
-              value={tabValue}
-              onChange={(e, v) => dispatch(setSelectedTab(v))}
-              variant="fullWidth"
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                backgroundColor: '#f5f5f5',
-                '& .Mui-selected': {
-                  fontWeight: 'bold',
-                  color: 'primary.main',
-                }
-              }}
-            >
-              <Tab label="Danh sách sinh viên" />
-              <Tab label="Tiến độ theo chương" />
-              <Tab label="Bài tập & Nộp bài" />
-              <Tab label="Cảnh báo & Nhắc nhở" />
-            </Tabs>
-
-            <Box sx={{ p: 3 }}>
-              {tabValue === 0 && <StudentList />}
-              {tabValue === 1 && <ChapterProgress />}
-              {tabValue === 2 && <AssignmentManagement />}
-              {tabValue === 3 && <Warnings />}
-            </Box>
-          </Paper>
-        </Container>
+          <Box sx={{ flexGrow: 1, p: 3, overflowY: 'auto' }}>
+            {tabValue === 0 && <StudentList />}
+            {tabValue === 1 && <ChapterProgress />}
+            {tabValue === 2 && <AssignmentManagement />}
+            {tabValue === 3 && <Warnings />}
+          </Box>
+        </Paper>
       </Box>
     </Box>
   );
 };
 
-// Wrapping with Provider and Theme like Index 1
 const Index: React.FC = () => {
   return (
     <Provider store={store}>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Container, Typography, Box, CssBaseline, ThemeProvider, createTheme, Alert, CircularProgress } from '@mui/material';
+import { Container, Typography, Box, CssBaseline, ThemeProvider, createTheme, Alert, CircularProgress, IconButton } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchStudentProgress, selectStatus, selectErrorMessage } from '@/redux/slices/studentProgressSlice';
 import StudentInfo from './StudentInfo';
@@ -8,7 +8,8 @@ import SummaryStats from './SummaryStats';
 import ErrorAnalysis from './ErrorAnalysis';
 import ImprovementSuggestions from './ImprovementSuggestions';
 import { AppDispatch } from '@/redux/store';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 // Create a theme instance
 const theme = createTheme({
@@ -42,6 +43,7 @@ const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const status = useSelector(selectStatus);
   const errorMessage = useSelector(selectErrorMessage);
+  const navigate = useNavigate();
 
   // Lấy MSSV từ URL parameter
   const { studentId } = useParams<{ studentId: string }>();
@@ -54,11 +56,25 @@ const Dashboard: React.FC = () => {
     }
   }, [dispatch, studentId]); // Remove status dependency to ensure fetching on studentId change
 
+  const handleBack = () => {
+    navigate('/tong-quan-tien-do');
+  };
+
   return (
     <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Bảng Tiến Độ Học Tập {studentId && `- MSSV: ${studentId}`}
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" component="h1">
+          Bảng Tiến Độ Học Tập {studentId && `- MSSV: ${studentId}`}
+        </Typography>
+        <IconButton
+          color="primary"
+          aria-label="back to course progress"
+          onClick={handleBack}
+          sx={{ ml: 2 }}
+        >
+          <ExitToAppIcon />
+        </IconButton>
+      </Box>
 
       {status === 'loading' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>

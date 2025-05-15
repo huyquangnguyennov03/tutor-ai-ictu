@@ -23,7 +23,7 @@ export default function DrawerHeader({ open }: DrawerHeaderProps) {
                 }}
             >
                 {open ? (
-                    <Logo sx={{ width: 'auto', height: 35 }} />
+                    <Logo />
                 ) : (
                     <ButtonBase disableRipple component={Link} to={"/"} sx={{ width: 46, height: 46 }}>
                         <Box
