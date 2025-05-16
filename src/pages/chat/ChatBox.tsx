@@ -128,8 +128,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   };
 
   // Scroll to bottom on new message
+// Thay thế useEffect cũ bằng cách này
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      const messagesContainer = messagesEndRef.current.parentElement;
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }
   }, [messages, isTyping]);
 
   // Group messages by date
@@ -199,7 +205,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         <>
           {/* Header */}
           <Box sx={{
-            p: 2,
+            p: 1,
             bgcolor: 'primary.main',
             color: 'white',
             display: 'flex',

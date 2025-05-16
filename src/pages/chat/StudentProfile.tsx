@@ -94,7 +94,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ user, progress, current
       {/* Header - Profile Section */}
       <Box
         sx={{
-          p: 3,
+          p: 1,
           bgcolor: 'primary.main',
           color: 'white',
           display: 'flex',

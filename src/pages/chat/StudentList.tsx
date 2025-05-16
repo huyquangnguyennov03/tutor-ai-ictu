@@ -148,7 +148,7 @@ const StudentList: React.FC<StudentListProps> = ({
           color: 'white'
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {userTypeLabel}
           </Typography>

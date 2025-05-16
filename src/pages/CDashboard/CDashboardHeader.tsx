@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { Paper, Grid, Typography, Button, Box } from '@mui/material';
+import {
+  Paper, Grid, Typography, Button, Box, Tooltip, useMediaQuery, useTheme
+} from '@mui/material';
+import ClassIcon from '@mui/icons-material/Class';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import CDashboardDialog from './CDashboardDialog';
@@ -14,6 +19,8 @@ import {
 const CDashboardHeader = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Get data from Redux store
   const classInfo = useSelector(selectClassInfo);
@@ -35,33 +42,55 @@ const CDashboardHeader = () => {
 
   return (
     <Box sx={{ mb: 4 }}>
-      <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
-        <Grid container alignItems="center">
+      {/* Header chính */}
+      <Paper
+        sx={{
+          p: 2,
+          backgroundColor: theme => theme.palette.primary.main,
+          color: theme => theme.palette.primary.contrastText,
+          borderRadius: 2,
+        }}
+      >
+        <Grid container alignItems="center" spacing={2}>
           <Grid item xs>
-            <Typography variant="h6" component="div">
+            <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
               Tổng Quan Tiến Độ Lớp Học - {courseName}
             </Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              size="small"
-              sx={{ mr: 1 }}
-              onClick={handleOpenDialog}
-            >
-              Chọn lớp
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleBackToDashboard}
-            >
-              Quay lại Dashboard
-            </Button>
+            <Tooltip title="Chọn lớp">
+              <Button
+                variant="contained"
+                color="secondary"
+                size="small"
+                onClick={handleOpenDialog}
+                startIcon={!isMobile && <ClassIcon />}
+              >
+                {isMobile ? <ClassIcon /> : 'Chọn lớp'}
+              </Button>
+            </Tooltip>
+          </Grid>
+          <Grid item>
+            <Tooltip title="Quay lại Dashboard">
+              <Button
+                variant="outlined"
+                color="inherit"
+                size="small"
+                onClick={handleBackToDashboard}
+                startIcon={!isMobile && <DashboardIcon />}
+                sx={{
+                  borderColor: 'rgba(255,255,255,0.7)',
+                  color: 'white',
+                }}
+              >
+                {isMobile ? <DashboardIcon /> : 'Quay lại Dashboard'}
+              </Button>
+            </Tooltip>
           </Grid>
         </Grid>
       </Paper>
 
+      {/* Thông tin lớp học */}
       <Paper sx={{ p: 2, mt: 2 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs>
@@ -82,14 +111,21 @@ const CDashboardHeader = () => {
             )}
           </Grid>
           <Grid item>
-            <Button variant="contained" color="success" size="small">
-              Xuất báo cáo
-            </Button>
+            <Tooltip title="Xuất báo cáo">
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={!isMobile && <FileDownloadIcon />}
+              >
+                {isMobile ? <FileDownloadIcon /> : 'Xuất báo cáo'}
+              </Button>
+            </Tooltip>
           </Grid>
         </Grid>
       </Paper>
 
-      {/* Dialog component */}
+      {/* Dialog chọn lớp */}
       <CDashboardDialog open={openDialog} onClose={handleCloseDialog} />
     </Box>
   );

@@ -16,6 +16,7 @@ import { User, Message, Conversation } from './types';
 import { mockUsers, mockConversations, mockStudentProgress } from './mockData';
 import socketService from '../../services/socketService';
 import { Roles } from '../../common/constants/roles';
+import './chat.css';
 
 const theme = createTheme({
   palette: {
@@ -352,8 +353,8 @@ const Index: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           bgcolor: 'background.default',
-          height: '100vh',
-          overflow: 'hidden'
+          height: '85vh',
+          overflow: 'auto'
         }}
       >
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -388,7 +389,7 @@ const Index: React.FC = () => {
                 overflow: 'hidden'
               }}
             >
-              <Box sx={{ height: '85%', overflow: 'hidden' }}>
+              <Box sx={{ height: '100%', overflow: 'hidden' }}>
                 <StudentList
                   users={filteredUsers}
                   selectedUserId={selectedUserId}
@@ -410,7 +411,7 @@ const Index: React.FC = () => {
                   xs: !selectedUserId && isMobile ? 'none' : 'block',
                   md: 'block'
                 },
-                height: '85%',
+                height: '100%',
                 overflow: 'hidden'
               }}
             >
@@ -454,7 +455,7 @@ const Index: React.FC = () => {
                 overflow: 'hidden'
               }}
             >
-              <Box sx={{ height: '85%', overflow: 'hidden' }}>
+              <Box sx={{ height: '100%', overflow: 'hidden' }}>
                 {selectedUser && (
                   <StudentProfile
                     user={selectedUser}
