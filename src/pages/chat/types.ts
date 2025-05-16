@@ -1,8 +1,22 @@
-export interface Student {
+import { Roles } from '../../common/constants/roles';
+
+export interface User {
   id: string;
   name: string;
-  status: 'online' | 'offline';
+  email?: string;
+  status: 'online' | 'offline' | 'away';
   lastActive?: string;
+  role: Roles;
+  avatar?: string;
+}
+
+export interface Student extends User {
+  role: Roles.STUDENT;
+  progress?: StudentProgress;
+}
+
+export interface Teacher extends User {
+  role: Roles.TEACHER;
 }
 
 export interface Message {
@@ -12,6 +26,17 @@ export interface Message {
   content: string;
   timestamp: string;
   isRead?: boolean;
+  type?: 'text' | 'image' | 'file';
+  fileUrl?: string;
+  fileName?: string;
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[]; // User IDs
+  messages: Message[];
+  lastMessage?: Message;
+  unreadCount?: number;
 }
 
 export interface CourseClass {
@@ -26,4 +51,11 @@ export interface StudentProgress {
   currentChapter: number;
   totalChapters: number;
   completionPercentage: number;
+}
+
+export interface ChatState {
+  users: User[];
+  conversations: Conversation[];
+  selectedUser: string | null;
+  isTyping: boolean;
 }

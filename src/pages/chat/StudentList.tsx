@@ -9,26 +9,39 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  Paper
+  Paper,
+  Badge,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  ListItemButton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PersonIcon from '@mui/icons-material/Person';
 import CircleIcon from '@mui/icons-material/Circle';
-import StudentListItem from './StudentListItem';
-import { Student } from './types';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { User, Conversation } from './types';
+import { Roles } from '../../common/constants/roles';
+import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 interface StudentListProps {
-  students: Student[];
-  selectedStudentId: string | null;
-  onSelectStudent: (student: Student) => void;
+  users: User[];
+  selectedUserId: string | null;
+  onSelectUser: (userId: string) => void;
+  currentUserRole: Roles;
+  conversations?: Conversation[];
 }
 
 const StudentList: React.FC<StudentListProps> = ({
-                                                   students,
-                                                   selectedStudentId,
-                                                   onSelectStudent
-                                                 }) => {
+  users,
+  selectedUserId,
+  onSelectUser,
+  currentUserRole,
+  conversations = []
+}) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filter, setFilter] = useState<string>('all');
 
@@ -42,28 +55,79 @@ const StudentList: React.FC<StudentListProps> = ({
     setFilter(value);
   };
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  let displayedStudents = [...filteredStudents];
+  let displayedUsers = [...filteredUsers];
 
   // Apply filters
   if (filter === 'online') {
-    displayedStudents = displayedStudents.filter(
-      (student) => student.status === 'online'
+    displayedUsers = displayedUsers.filter(
+      (user) => user.status === 'online'
     );
   } else if (filter === 'offline') {
-    displayedStudents = displayedStudents.filter(
-      (student) => student.status === 'offline'
+    displayedUsers = displayedUsers.filter(
+      (user) => user.status === 'offline' || user.status === 'away'
     );
   }
 
-  const onlineCount = students.filter(
-    (student) => student.status === 'online'
+  const onlineCount = users.filter(
+    (user) => user.status === 'online'
   ).length;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online':
+        return '#4caf50';
+      case 'away':
+        return '#ff9800';
+      case 'offline':
+      default:
+        return '#bdbdbd';
+    }
+  };
+
+  const formatLastMessage = (conversation?: Conversation) => {
+    if (!conversation || !conversation.lastMessage) return '';
+
+    const { content, timestamp } = conversation.lastMessage;
+    const messageDate = new Date(timestamp);
+
+    let timeStr = '';
+    if (isToday(messageDate)) {
+      timeStr = format(messageDate, 'HH:mm');
+    } else if (isYesterday(messageDate)) {
+      timeStr = 'Hôm qua';
+    } else {
+      timeStr = format(messageDate, 'dd/MM');
+    }
+
+    return `${content.length > 25 ? content.substring(0, 25) + '...' : content} · ${timeStr}`;
+  };
+
+  const getConversationWithUser = (userId: string) => {
+    return conversations.find(
+      conv => conv.participants.includes(userId)
+    );
+  };
+
+  const getUnreadCount = (userId: string) => {
+    const conversation = getConversationWithUser(userId);
+    return conversation?.unreadCount || 0;
+  };
+
+  const formatLastActive = (lastActive?: string) => {
+    if (!lastActive) return '';
+
+    const date = new Date(lastActive);
+    return formatDistanceToNow(date, { addSuffix: true, locale: vi });
+  };
+
+  const userTypeLabel = currentUserRole === Roles.TEACHER ? 'Sinh viên' : 'Giáo viên';
 
   return (
     <Paper
@@ -86,7 +150,7 @@ const StudentList: React.FC<StudentListProps> = ({
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Sinh viên
+            {userTypeLabel}
           </Typography>
           <Tooltip title="Làm mới danh sách">
             <IconButton size="small" sx={{ color: 'white' }}>
@@ -99,7 +163,7 @@ const StudentList: React.FC<StudentListProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <PersonIcon fontSize="small" sx={{ mr: 0.5 }} />
             <Typography variant="body2">
-              {students.length} sinh viên
+              {users.length} {userTypeLabel.toLowerCase()}
             </Typography>
           </Box>
           <Divider orientation="vertical" flexItem sx={{ mx: 1, bgcolor: 'rgba(255,255,255,0.3)' }} />
@@ -115,7 +179,7 @@ const StudentList: React.FC<StudentListProps> = ({
       <Box sx={{ p: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.08)' }}>
         <TextField
           fullWidth
-          placeholder="Tìm kiếm sinh viên..."
+          placeholder={`Tìm kiếm ${userTypeLabel.toLowerCase()}...`}
           variant="outlined"
           size="small"
           value={searchTerm}
@@ -172,25 +236,89 @@ const StudentList: React.FC<StudentListProps> = ({
         sx={{
           flexGrow: 1,
           overflow: 'auto',
-          p: 2,
           bgcolor: 'background.default'
         }}
       >
-        {displayedStudents.length > 0 ? (
+        {displayedUsers.length > 0 ? (
           <List disablePadding>
-            {displayedStudents.map((student) => (
-              <StudentListItem
-                key={student.id}
-                student={student}
-                selected={student.id === selectedStudentId}
-                onClick={() => onSelectStudent(student)}
-              />
-            ))}
+            {displayedUsers.map((user) => {
+              const conversation = getConversationWithUser(user.id);
+              const unreadCount = getUnreadCount(user.id);
+
+              return (
+                <ListItemButton
+                  key={user.id}
+                  selected={user.id === selectedUserId}
+                  onClick={() => onSelectUser(user.id)}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+                    '&.Mui-selected': {
+                      backgroundColor: 'primary.lighter',
+                    },
+                    '&.Mui-selected:hover': {
+                      backgroundColor: 'primary.lighter',
+                    },
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Badge
+                      overlap="circular"
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      badgeContent={
+                        <FiberManualRecordIcon
+                          sx={{
+                            color: getStatusColor(user.status),
+                            fontSize: 12,
+                          }}
+                        />
+                      }
+                    >
+                      <Avatar src={user.avatar} alt={user.name}>
+                        {user.name.charAt(0)}
+                      </Avatar>
+                    </Badge>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle1" fontWeight={unreadCount > 0 ? 'bold' : 'medium'}>
+                          {user.name}
+                        </Typography>
+                        {unreadCount > 0 && (
+                          <Badge
+                            badgeContent={unreadCount}
+                            color="primary"
+                            sx={{ ml: 1 }}
+                          />
+                        )}
+                      </Box>
+                    }
+                    secondary={
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        noWrap
+                        sx={{ fontWeight: unreadCount > 0 ? 'medium' : 'normal' }}
+                      >
+                        {conversation
+                          ? formatLastMessage(conversation)
+                          : user.status === 'online'
+                            ? 'Online'
+                            : `Hoạt động ${formatLastActive(user.lastActive)}`
+                        }
+                      </Typography>
+                    }
+                  />
+                </ListItemButton>
+              );
+            })}
           </List>
         ) : (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Không tìm thấy sinh viên phù hợp
+              Không tìm thấy {userTypeLabel.toLowerCase()} phù hợp
             </Typography>
           </Box>
         )}

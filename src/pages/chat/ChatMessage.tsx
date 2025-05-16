@@ -2,19 +2,27 @@ import React from 'react';
 import { Box, Typography, Paper, Avatar } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { Message } from './types';
+import { format } from 'date-fns';
 
 interface ChatMessageProps {
   message: Message;
   isCurrentUser: boolean;
+  senderName?: string;
+  senderAvatar?: string;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ 
+  message, 
+  isCurrentUser,
+  senderName,
+  senderAvatar
+}) => {
   const getBackgroundColor = () => {
     switch (message.senderType) {
       case 'teacher':
-        return '#e3f2fd'; // Light blue for teacher
+        return isCurrentUser ? '#e3f2fd' : '#f1f3f4'; // Light blue for current user, light gray for others
       case 'student':
-        return '#f1f3f4'; // Light gray for student
+        return isCurrentUser ? '#e3f2fd' : '#f1f3f4'; // Light blue for current user, light gray for others
       case 'ai':
         return '#fef7ff'; // Light purple for AI
       default:
@@ -25,9 +33,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
   const getBorderColor = () => {
     switch (message.senderType) {
       case 'teacher':
-        return 'rgba(25, 118, 210, 0.2)'; // Blue border
+        return isCurrentUser ? 'rgba(25, 118, 210, 0.2)' : 'rgba(0, 0, 0, 0.08)';
       case 'student':
-        return 'rgba(0, 0, 0, 0.08)'; // Gray border
+        return isCurrentUser ? 'rgba(25, 118, 210, 0.2)' : 'rgba(0, 0, 0, 0.08)';
       case 'ai':
         return 'rgba(156, 39, 176, 0.15)'; // Purple border
       default:
@@ -38,9 +46,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
   const getTextColor = () => {
     switch (message.senderType) {
       case 'teacher':
-        return '#1565c0'; // Darker blue for teacher name
+        return isCurrentUser ? '#1565c0' : '#37474f';
       case 'student':
-        return '#37474f'; // Dark gray for student name
+        return isCurrentUser ? '#1565c0' : '#37474f';
       case 'ai':
         return '#7b1fa2'; // Purple for AI name
       default:
@@ -48,7 +56,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
     }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string = '') => {
     return name
       .split(' ')
       .map(part => part[0])
@@ -66,18 +74,62 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
       );
     }
 
+    if (senderAvatar) {
+      return (
+        <Avatar
+          src={senderAvatar}
+          alt={senderName}
+          sx={{ width: 36, height: 36 }}
+        >
+          {getInitials(senderName)}
+        </Avatar>
+      );
+    }
+
     return (
       <Avatar
         sx={{
-          bgcolor: message.senderType === 'teacher' ? '#1976d2' : '#78909c',
+          bgcolor: isCurrentUser ? '#1976d2' : '#78909c',
           width: 36,
           height: 36,
           fontSize: '0.875rem'
         }}
       >
-        {getInitials(message.sender)}
+        {getInitials(senderName || message.sender)}
       </Avatar>
     );
+  };
+
+  // Format code blocks
+  const formatContent = (content: string) => {
+    if (!content.includes('```')) return content;
+
+    const parts = content.split('```');
+    return parts.map((part, index) => {
+      // Even indices are normal text, odd indices are code blocks
+      if (index % 2 === 0) {
+        return <span key={index}>{part}</span>;
+      } else {
+        return (
+          <Box
+            key={index}
+            component="pre"
+            sx={{
+              backgroundColor: '#f5f5f5',
+              borderRadius: 1,
+              p: 1.5,
+              my: 1,
+              overflowX: 'auto',
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              border: '1px solid rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <code>{part}</code>
+          </Box>
+        );
+      }
+    });
   };
 
   return (
@@ -106,7 +158,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
               fontWeight: 500
             }}
           >
-            {message.sender}
+            {senderName || message.sender}
           </Typography>
         )}
 
@@ -136,7 +188,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
           }}
         >
           <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-            {message.content}
+            {formatContent(message.content)}
           </Typography>
 
           <Typography
@@ -149,10 +201,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isCurrentUser }) => 
               opacity: 0.7
             }}
           >
-            {new Date(message.timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+            {format(new Date(message.timestamp), 'HH:mm')}
           </Typography>
         </Paper>
       </Box>

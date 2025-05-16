@@ -1,6 +1,7 @@
 // assets
 import { LineChartOutlined } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
+import { Roles } from "@/common/constants/roles"
 
 // icons
 const icons = {
@@ -20,7 +21,8 @@ const cdashboard: MenuItem = {
       type: 'item',
       url: '/tong-quan-tien-do',
       icon: icons.LineChartOutlined,
-      breadcrumbs: true
+      breadcrumbs: true,
+      roles: [Roles.TEACHER],
     }
   ]
 };

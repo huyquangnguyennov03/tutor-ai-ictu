@@ -14,29 +14,41 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
-  Box,
+  Avatar,
+  useMediaQuery,
+  useTheme,
+  Tooltip,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ClassIcon from '@mui/icons-material/Class';
 import CloseIcon from '@mui/icons-material/Close';
+import { Roles } from '@/common/constants/roles';
 
 interface ChatToolbarProps {
   currentClass: string;
   onClassChange: (className: string) => void;
+  currentUserRole?: Roles;
+  unreadNotifications?: number;
+  userAvatar?: string;
+  userName?: string;
 }
 
-const ChatToolbar: React.FC<ChatToolbarProps> = ({ currentClass, onClassChange }) => {
+const ChatToolbar: React.FC<ChatToolbarProps> = ({
+                                                   currentClass,
+                                                   onClassChange,
+                                                   currentUserRole = Roles.TEACHER,
+                                                   unreadNotifications = 0,
+                                                   userAvatar,
+                                                   userName = 'Giáo viên'
+                                                 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<string>(currentClass);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleClassChange = (event: SelectChangeEvent) => {
     setSelectedClass(event.target.value);
@@ -53,26 +65,72 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({ currentClass, onClassChange }
         <Toolbar>
           <SchoolIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Giao diện Tương tác Giáo viên - Sinh viên
+            {isMobile ? 'Chat' : 'Giao diện Tương tác Giáo viên - Sinh viên'}
           </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<ClassIcon />}
-            onClick={handleClickOpen}
-            sx={{ mr: 2, boxShadow: 2 }}
-          >
-            Chọn lớp
-          </Button>
-          <Button
-            variant="outlined"
-            color="inherit"
-            startIcon={<DashboardIcon />}
-            href="/trang-chu"
-            sx={{ fontWeight: 500, borderColor: 'rgba(255,255,255,0.5)' }}
-          >
-            Quay lại Dashboard
-          </Button>
+
+          {currentUserRole === Roles.TEACHER && (
+            <>
+              {/* Desktop button */}
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<ClassIcon />}
+                onClick={handleClickOpen}
+                sx={{ mr: 2, boxShadow: 2, display: { xs: 'none', sm: 'flex' } }}
+              >
+                Chọn lớp
+              </Button>
+              {/* Mobile icon button */}
+              <Tooltip title="Chọn lớp">
+                <IconButton
+                  onClick={handleClickOpen}
+                  color="inherit"
+                  sx={{ display: { xs: 'flex', sm: 'none' } }}
+                >
+                  <ClassIcon />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
+
+          <>
+            {/* Desktop button */}
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<DashboardIcon />}
+              href="/trang-chu"
+              sx={{
+                fontWeight: 500,
+                borderColor: 'rgba(255,255,255,0.5)',
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              Quay lại Dashboard
+            </Button>
+            {/* Mobile icon button */}
+            <Tooltip title="Dashboard">
+              <IconButton
+                href="/trang-chu"
+                color="inherit"
+                sx={{ display: { xs: 'flex', sm: 'none' }, ml: 1 }}
+              >
+                <DashboardIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+
+          {userAvatar && (
+            <IconButton sx={{ ml: 1, p: 0 }}>
+              <Avatar
+                src={userAvatar}
+                alt={userName}
+                sx={{ width: 36, height: 36, border: '2px solid white' }}
+              >
+                {userName.charAt(0)}
+              </Avatar>
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -109,14 +167,12 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({ currentClass, onClassChange }
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ pt: 4, pb: 2 }}>
-          {/* Tăng padding-top để tạo thêm không gian cho label */}
           <FormControl fullWidth variant="outlined" sx={{ mt: 1 }}>
             <InputLabel
               id="class-select-label"
               sx={{
                 backgroundColor: 'white',
                 px: 1,
-                // Đảm bảo label hiển thị đúng
                 '&.MuiInputLabel-shrink': {
                   transform: 'translate(14px, -9px) scale(0.75)'
                 }
@@ -131,9 +187,9 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({ currentClass, onClassChange }
               label="Lớp học:"
               onChange={handleClassChange}
               sx={{
-                height: '56px', // Tăng chiều cao của Select
+                height: '56px',
                 '& .MuiSelect-select': {
-                  pt: 2 // Tăng padding-top cho nội dung select
+                  pt: 2
                 }
               }}
             >
