@@ -26,7 +26,7 @@ import ChatMessage from './ChatMessage';
 import StudentProfile from './StudentProfile';
 import { format, isToday, isYesterday } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { mockStudentProgress } from './mockData'; // Import mockStudentProgress for the profile
+import { mockStudentProgress } from '../../mockData/mockDataChat'; // Import mockStudentProgress for the profile
 
 interface ChatBoxProps {
   className: string;

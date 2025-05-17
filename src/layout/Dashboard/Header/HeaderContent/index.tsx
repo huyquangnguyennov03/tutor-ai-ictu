@@ -15,8 +15,8 @@ const HeaderContent: React.FC = () => {
     <Box sx={{ width: '100%' }} display="flex" alignItems="center">
       {!downLG && <Search />}
       {downLG && <Box sx={{ width: '100%', ml: 1 }} />}
-      <Notification />
       <ChatNotification />
+      <Notification />
       {!downLG && <Profile />}
       {downLG && <MobileSection />}
     </Box>

@@ -43,28 +43,41 @@ const CDashboardDialog: React.FC<CDashboardDialogProps> = ({ open, onClose }) =>
 
   // Find the current course's full display name
   const currentCourseObj = courseOptions.find(course => course.id === currentCourse);
-  const selectedClass = currentCourseObj ? `${currentCourseObj.fullName} - ${currentCourseObj.id}` : '';
+
+  // Sử dụng state local để lưu trữ lựa chọn tạm thời
+  const [tempCourse, setTempCourse] = React.useState(currentCourse);
+  const [tempSemester, setTempSemester] = React.useState(currentSemester);
+
+  // Reset giá trị tạm thời khi dialog mở
+  React.useEffect(() => {
+    if (open) {
+      setTempCourse(currentCourse);
+      setTempSemester(currentSemester);
+    }
+  }, [open, currentCourse, currentSemester]);
 
   const handleClassChange = (event: SelectChangeEvent) => {
-    // Extract course ID from selection (e.g., "C Programming - C01" -> "C01")
-    const courseId = event.target.value.split(' - ')[1];
-    if (courseId) {
-      dispatch(setCurrentCourse(courseId));
-    }
+    // Chỉ cập nhật state local, chưa dispatch action
+    setTempCourse(event.target.value);
   };
 
   const handleSemesterChange = (event: SelectChangeEvent) => {
-    dispatch(setCurrentSemester(event.target.value));
+    // Chỉ cập nhật state local, chưa dispatch action
+    setTempSemester(event.target.value);
   };
 
   const handleConfirm = () => {
-    // Fetch dashboard data with the selected course and semester
+    // Cập nhật state trong Redux
+    dispatch(setCurrentCourse(tempCourse));
+    dispatch(setCurrentSemester(tempSemester));
+    
+    // Fetch dashboard data với lớp và học kỳ đã chọn
     dispatch(fetchDashboardData({
-      courseId: currentCourse,
-      semesterId: currentSemester
+      courseId: tempCourse,
+      semesterId: tempSemester
     }));
 
-    // Close dialog
+    // Đóng dialog
     onClose();
   };
 
@@ -103,13 +116,13 @@ const CDashboardDialog: React.FC<CDashboardDialogProps> = ({ open, onClose }) =>
           </Typography>
           <FormControl fullWidth>
             <Select
-              value={selectedClass}
+              value={tempCourse}
               onChange={handleClassChange}
               displayEmpty
               inputProps={{ 'aria-label': 'Without label' }}
             >
               {courseOptions.map((course) => (
-                <MenuItem key={course.id} value={`${course.fullName} - ${course.id}`}>
+                <MenuItem key={course.id} value={course.id}>
                   {course.name}
                 </MenuItem>
               ))}
@@ -123,7 +136,7 @@ const CDashboardDialog: React.FC<CDashboardDialogProps> = ({ open, onClose }) =>
           </Typography>
           <FormControl fullWidth>
             <Select
-              value={currentSemester}
+              value={tempSemester}
               onChange={handleSemesterChange}
               displayEmpty
               inputProps={{ 'aria-label': 'Without label' }}

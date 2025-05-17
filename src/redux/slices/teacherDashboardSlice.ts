@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { mockApiService } from '@/services/mockApiService';
 
 // Types for API responses
 export interface Student {
@@ -128,19 +129,8 @@ const initialState: TeacherDashboardState = {
   warnings: [],
   topStudents: [],
   classInfo: null,
-  courseOptions: [
-    { id: 'C01', name: 'C Programming - C01', fullName: 'C Programming' },
-    { id: 'C02', name: 'C Programming - C02', fullName: 'C Programming' },
-    { id: 'J01', name: 'Java Programming - J01', fullName: 'Java Programming' },
-    { id: 'P01', name: 'Python - P01', fullName: 'Python' },
-    { id: 'W01', name: 'Web Development - W01', fullName: 'Web Development' }
-  ],
-  semesterOptions: [
-    { id: 'SUM2024', name: 'Hè 2024' },
-    { id: 'SEM12024', name: 'HK1 2024-2025' },
-    { id: 'SEM22023', name: 'HK2 2023-2024' },
-    { id: 'SEM12023', name: 'HK1 2023-2024' }
-  ],
+  courseOptions: [], // Will be populated from API
+  semesterOptions: [], // Will be populated from API
   currentCourse: 'C01',
   currentSemester: 'SUM2024',
   selectedTab: 0,
@@ -156,12 +146,11 @@ export const fetchDashboardData = createAsyncThunk(
   'teacherDashboard/fetchDashboardData',
   async ({ courseId, semesterId }: { courseId: string; semesterId: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`https://run.mocky.io/v3/bc4357b0-ea70-4f62-82d6-c8d8414208a9`, {
-        params: { courseId, semesterId }
-      });
-      return response.data;
+      // Use mock API service instead of real API call
+      const data = await mockApiService.fetchDashboardData(courseId, semesterId);
+      return data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Không thể tải dữ liệu');
+      return rejectWithValue(error.message || 'Không thể tải dữ liệu');
     }
   }
 );
@@ -171,15 +160,11 @@ export const fetchAssignmentSubmission = createAsyncThunk(
   'teacherDashboard/fetchAssignmentSubmission',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // Sử dụng API thực tế thay vì dữ liệu cứng
-      const response = await axios.get(`https://run.mocky.io/v3/bc4357b0-ea70-4f62-82d6-c8d8414208a9`, {
-        params: { assignmentName }
-      });
-
-      // Trả về dữ liệu từ API
-      return response.data;
+      // Sử dụng mock API service thay vì API thực tế
+      const data = await mockApiService.fetchAssignmentSubmission(assignmentName);
+      return data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Không thể tải dữ liệu bài tập');
+      return rejectWithValue(error.message || 'Không thể tải dữ liệu bài tập');
     }
   }
 );
@@ -189,13 +174,11 @@ export const sendReminder = createAsyncThunk(
   'teacherDashboard/sendReminder',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would send data to the API
-      const response = await axios.post(`https://run.mocky.io/v3/ab3ef706-a743-4f6d-aa9c-4663e0ee364f`, {
-        assignmentName
-      });
+      // Use mock API service
+      const response = await mockApiService.sendReminder(assignmentName);
       return { success: true, assignmentName };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Không thể gửi nhắc nhở');
+      return rejectWithValue(error.message || 'Không thể gửi nhắc nhở');
     }
   }
 );
@@ -205,14 +188,11 @@ export const sendReminderToStudent = createAsyncThunk(
   'teacherDashboard/sendReminderToStudent',
   async ({ assignmentName, mssv }: { assignmentName: string; mssv: string }, { rejectWithValue }) => {
     try {
-      // In a real app, this would send data to the API
-      const response = await axios.post(`https://run.mocky.io/v3/ab3ef706-a743-4f6d-aa9c-4663e0ee364f`, {
-        assignmentName,
-        mssv
-      });
+      // Use mock API service
+      const response = await mockApiService.sendReminderToStudent(assignmentName, mssv);
       return { success: true, assignmentName, mssv };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Không thể gửi nhắc nhở cho sinh viên');
+      return rejectWithValue(error.message || 'Không thể gửi nhắc nhở cho sinh viên');
     }
   }
 );
@@ -222,14 +202,11 @@ export const extendDeadline = createAsyncThunk(
   'teacherDashboard/extendDeadline',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would send data to the API
-      const response = await axios.post(`https://run.mocky.io/v3/8f5c9f95-97f4-4a69-84b3-484669a15a09`, {
-        assignmentName,
-        action: 'extend'
-      });
+      // Use mock API service
+      const response = await mockApiService.extendDeadline(assignmentName);
       return { success: true, assignmentName };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Không thể gia hạn deadline');
+      return rejectWithValue(error.message || 'Không thể gia hạn deadline');
     }
   }
 );
@@ -283,6 +260,14 @@ const teacherDashboardSlice = createSlice({
         state.warnings = action.payload.warnings;
         state.topStudents = action.payload.topStudents;
         state.classInfo = action.payload.classInfo;
+        
+        // Update course and semester options if provided
+        if (action.payload.courseOptions) {
+          state.courseOptions = action.payload.courseOptions;
+        }
+        if (action.payload.semesterOptions) {
+          state.semesterOptions = action.payload.semesterOptions;
+        }
       })
       .addCase(fetchDashboardData.rejected, (state, action: PayloadAction<any>) => {
         state.status = 'failed';

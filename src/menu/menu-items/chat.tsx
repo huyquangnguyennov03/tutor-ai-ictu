@@ -16,7 +16,7 @@ const chat: MenuItem = {
   children: [
     {
       id: 'chat',
-      title: 'Chat',
+      title: 'Tin nhắn',
       type: 'item',
       url: '/chat',
       icon: icons.MessageOutlined,

@@ -51,9 +51,12 @@ const Dashboard: React.FC = () => {
   const currentCourse = useSelector(selectCurrentCourse);
   const currentSemester = useSelector(selectCurrentSemester);
 
+  // Load dashboard data only when component mounts for the first time
   useEffect(() => {
+    // Fetch data from our mock API
     dispatch(fetchDashboardData({ courseId: currentCourse, semesterId: currentSemester }));
-  }, [dispatch, currentCourse, currentSemester]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]); // Chỉ phụ thuộc vào dispatch, không phụ thuộc vào currentCourse và currentSemester
 
   if (status === 'loading') {
     return (

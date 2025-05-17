@@ -13,7 +13,7 @@ import ChatBox from './ChatBox';
 import StudentProfile from './StudentProfile';
 import ChatToolbar from './ChatToolbar';
 import { User, Message, Conversation } from './types';
-import { mockUsers, mockConversations, mockStudentProgress } from './mockData';
+import { mockUsers, mockConversations, mockStudentProgress } from '../../mockData/mockDataChat';
 import socketService from '../../services/socketService';
 import { Roles } from '../../common/constants/roles';
 import './chat.css';
@@ -146,39 +146,54 @@ const Index: React.FC = () => {
   const selectedConversation = conversations.find(
     conversation =>
       conversation.participants.includes(currentUser.id) &&
-      conversation.participants.includes(selectedUserId || '')
+      selectedUserId !== null && // Check if selectedUserId is not null
+      conversation.participants.includes(selectedUserId)
   ) || null;
 
   // Add a message to a conversation
   const addMessageToConversation = useCallback((message: Message) => {
     const { sender } = message;
-    const otherUserId = sender !== currentUser.id ? sender : message.sender;
+
+    // Xác định đúng người nhận tin nhắn
+    let otherUserId: string | null;
+
+    if (sender === currentUser.id) {
+      // Nếu người gửi là người dùng hiện tại, người nhận phải là người được chọn
+      otherUserId = selectedUserId;
+    } else if (sender === 'ai') {
+      // Nếu người gửi là AI, thêm vào cuộc trò chuyện hiện tại
+      otherUserId = selectedUserId;
+    } else {
+      // Người gửi là người khác, chính là người nhắn cho mình
+      otherUserId = sender;
+    }
 
     setConversations(prevConversations => {
-      // Find if conversation exists
+      // Tìm cuộc trò chuyện giữa người dùng hiện tại và người nhận tin nhắn
       const conversationIndex = prevConversations.findIndex(
         conv =>
           conv.participants.includes(currentUser.id) &&
+          otherUserId !== null && // Check if otherUserId is not null
           conv.participants.includes(otherUserId)
       );
 
       if (conversationIndex !== -1) {
-        // Update existing conversation
+        // Cập nhật cuộc trò chuyện đã tồn tại
         const updatedConversations = [...prevConversations];
         const conversation = { ...updatedConversations[conversationIndex] };
 
         conversation.messages = [...conversation.messages, message];
         conversation.lastMessage = message;
 
-        // Update unread count if message is from the other user
+        // Cập nhật số tin nhắn chưa đọc nếu tin nhắn từ người khác
         if (sender !== currentUser.id && (!selectedUserId || selectedUserId !== otherUserId)) {
           conversation.unreadCount = (conversation.unreadCount || 0) + 1;
         }
 
         updatedConversations[conversationIndex] = conversation;
         return updatedConversations;
-      } else {
-        // Create new conversation
+      } else if (otherUserId !== null) { // Check if otherUserId is not null before creating a new conversation
+        // Tạo cuộc trò chuyện mới
         const newConversation: Conversation = {
           id: `conv_${Date.now()}`,
           participants: [currentUser.id, otherUserId],
@@ -189,8 +204,12 @@ const Index: React.FC = () => {
 
         return [...prevConversations, newConversation];
       }
+
+      // If otherUserId is null, return unchanged conversations
+      return prevConversations;
     });
   }, [currentUser.id, selectedUserId]);
+
 
   // Handle user selection
   const handleSelectUser = (userId: string) => {
@@ -237,7 +256,7 @@ const Index: React.FC = () => {
   const handleSendMessage = (content: string) => {
     if (!selectedUserId || !content.trim()) return;
 
-    // Create a new message
+    // Tạo tin nhắn mới với người gửi là người dùng hiện tại
     const newMessage: Message = {
       id: `msg_${Date.now()}`,
       sender: currentUser.id,
@@ -247,34 +266,37 @@ const Index: React.FC = () => {
       isRead: false,
     };
 
-    // Add message to conversation
+    // Thêm tin nhắn vào cuộc trò chuyện
     addMessageToConversation(newMessage);
 
-    // Simulate receiving a response after a delay (for demo purposes)
+    // Mô phỏng nhận phản hồi sau một khoảng thời gian (cho mục đích demo)
     setTimeout(() => {
-      // Show typing indicator
+      // Hiển thị đang nhập
       setIsTyping(true);
 
       setTimeout(() => {
-        // Hide typing indicator and send response
+        // Ẩn đang nhập và gửi phản hồi
         setIsTyping(false);
 
-        // Create a response message
-        const responseMessage: Message = {
-          id: `msg_${Date.now() + 1}`,
-          sender: selectedUserId,
-          senderType: selectedUser?.role === Roles.TEACHER ? 'teacher' : 'student',
-          content: `Đây là phản hồi tự động cho tin nhắn: "${content}"`,
-          timestamp: new Date().toISOString(),
-          isRead: true,
-        };
+        // Kiểm tra selectedUser và selectedUserId không null trước khi tạo tin nhắn
+        if (selectedUser && selectedUserId) {
+          // Tạo tin nhắn phản hồi với người gửi là người đang được chọn
+          const responseMessage: Message = {
+            id: `msg_${Date.now() + 1}`,
+            sender: selectedUserId,
+            senderType: selectedUser.role === Roles.TEACHER ? 'teacher' : 'student',
+            content: `Đây là phản hồi tự động cho tin nhắn: "${content}"`,
+            timestamp: new Date().toISOString(),
+            isRead: true,
+          };
 
-        // Add response to conversation
-        addMessageToConversation(responseMessage);
-      }, 2000); // Simulate typing for 2 seconds
-    }, 1000); // Wait 1 second before starting to "type"
+          // Thêm phản hồi vào cuộc trò chuyện
+          addMessageToConversation(responseMessage);
+        }
+      }, 2000); // Mô phỏng nhập trong 2 giây
+    }, 1000); // Chờ 1 giây trước khi bắt đầu "nhập"
 
-    // If AI Tutor is enabled, sometimes add AI suggestions
+    // Nếu AI Tutor được bật, đôi khi thêm gợi ý AI
     if (isAITutorEnabled && Math.random() > 0.5) {
       setTimeout(() => {
         const aiResponse: Message = {
@@ -286,7 +308,7 @@ const Index: React.FC = () => {
           isRead: true,
         };
 
-        // Add AI response to conversation
+        // Thêm phản hồi AI vào cuộc trò chuyện
         addMessageToConversation(aiResponse);
       }, 3500);
     }

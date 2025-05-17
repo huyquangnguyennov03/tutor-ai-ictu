@@ -1,5 +1,5 @@
-import { Roles } from '../../common/constants/roles';
-import { Conversation, Message, Student, Teacher, User } from './types';
+import { Roles } from '../common/constants/roles';
+import { Conversation, Message, Student, Teacher, User } from '../pages/chat/types';
 
 export const mockUsers: User[] = [
   {
@@ -139,9 +139,9 @@ export const mockConversations: Conversation[] = [
     participants: ['teacher1', '22520001'],
     messages: mockMessages.filter(
       (message) =>
-        (message.sender === 'teacher1' && message.senderType === 'teacher' && ['1', '3', '5'].includes(message.id)) ||
-        (message.sender === '22520001' && message.senderType === 'student' && ['2'].includes(message.id)) ||
-        (message.sender === 'ai' && message.senderType === 'ai' && ['4'].includes(message.id))
+        (message.sender === 'teacher1' && ['1', '3', '5'].includes(message.id)) ||
+        (message.sender === '22520001' && ['2'].includes(message.id)) ||
+        (message.sender === 'ai' && ['4'].includes(message.id))
     ),
     lastMessage: mockMessages.find(message => message.id === '5'),
     unreadCount: 1,
@@ -151,8 +151,8 @@ export const mockConversations: Conversation[] = [
     participants: ['teacher1', '22520002'],
     messages: mockMessages.filter(
       (message) =>
-        (message.sender === 'teacher1' && message.senderType === 'teacher' && ['6', '8'].includes(message.id)) ||
-        (message.sender === '22520002' && message.senderType === 'student' && ['7'].includes(message.id))
+        (message.sender === 'teacher1' && ['6', '8'].includes(message.id)) ||
+        (message.sender === '22520002' && ['7'].includes(message.id))
     ),
     lastMessage: mockMessages.find(message => message.id === '8'),
     unreadCount: 0,
@@ -162,7 +162,7 @@ export const mockConversations: Conversation[] = [
     participants: ['teacher1', '22520003'],
     messages: mockMessages.filter(
       (message) =>
-        (message.sender === '22520003' && message.senderType === 'student' && ['9'].includes(message.id))
+        (message.sender === '22520003' && ['9'].includes(message.id))
     ),
     lastMessage: mockMessages.find(message => message.id === '9'),
     unreadCount: 1,
