@@ -1,10 +1,9 @@
 // assets
-import { MessageOutlined  } from '@ant-design/icons';
+import { CommentOutlined  } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
-
 // icons
 const icons = {
-  MessageOutlined
+  CommentOutlined
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
@@ -19,7 +18,7 @@ const chat: MenuItem = {
       title: 'Tin nhắn',
       type: 'item',
       url: '/chat',
-      icon: icons.MessageOutlined,
+      icon: icons.CommentOutlined,
       breadcrumbs: false
     }
   ]

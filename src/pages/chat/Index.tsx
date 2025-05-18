@@ -16,7 +16,6 @@ import { User, Message, Conversation } from './types';
 import { mockUsers, mockConversations, mockStudentProgress } from '../../mockData/mockDataChat';
 import socketService from '../../services/socketService';
 import { Roles } from '../../common/constants/roles';
-import './chat.css';
 
 const theme = createTheme({
   palette: {

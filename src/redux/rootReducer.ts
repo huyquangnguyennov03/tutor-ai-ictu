@@ -7,6 +7,8 @@ import searchReducer from "@/redux/slices/searchSlice"
 import studentProgressReducer from "@/redux/slices/studentProgressSlice"
 import teacherDashboardReducer from "@/redux/slices/teacherDashboardSlice"
 import teacherStudentChatReducer from "@/redux/slices/teacherStudentChatSlice"
+import chatTutorReducer from "@/redux/slices/chatTutorSlice"
+import assignmentManagementReducer from "@/redux/slices/assignmentManagementSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -14,7 +16,9 @@ const rootReducer = combineReducers({
   search: searchReducer,
   studentProgress: studentProgressReducer,
   teacherDashboard: teacherDashboardReducer,
-  chat: teacherStudentChatReducer
+  chat: teacherStudentChatReducer,
+  chatTutor: chatTutorReducer,
+  assignmentManagement: assignmentManagementReducer
 })
 
 export default rootReducer

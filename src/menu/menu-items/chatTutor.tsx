@@ -1,31 +1,30 @@
 // assets
-import { FundOutlined  } from '@ant-design/icons';
+import { MessageOutlined } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
 import { Roles } from "@/common/constants/roles"
 
 // icons
 const icons = {
-  FundOutlined
+  MessageOutlined
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
-const LearningProcess: MenuItem = {
-  id: 'learning-process',
+const chatTutor: MenuItem = {
+  id: 'chatTutor',
   title: '',
   type: 'group',
   children: [
     {
-      id: 'learning-process',
-      title: 'Tiến độ học tập',
+      id: 'chatTutor',
+      title: 'Trợ Giảng AI - Lập Trình C',
       type: 'item',
-      // url: '/tien-do-hoc-tap/:studentId',
-      url: '/tien-do-hoc-tap/:C01001',
-      icon: icons.FundOutlined,
+      url: '/chat-tutor',
+      icon: icons.MessageOutlined,
       breadcrumbs: true,
       roles: [Roles.STUDENT],
     }
   ]
 };
 
-export default LearningProcess;
+export default chatTutor;

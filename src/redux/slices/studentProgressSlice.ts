@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { API_ENDPOINTS } from '@/common/constants/apis';
 
 // Định nghĩa các interface
 export interface ChapterData {
@@ -67,7 +68,10 @@ export const fetchStudentProgress = createAsyncThunk(
   'studentProgress/fetchStudentProgress',
   async (studentId: string, { rejectWithValue }) => {
     try {
-      // Trong môi trường thực tế, URL sẽ bao gồm studentId như một tham số hoặc một phần của đường dẫn
+      // Sử dụng endpoint từ file cấu hình API
+      const url = API_ENDPOINTS.LEARNING_PROCESS.GET_STUDENT_PROGRESS.replace(':id', studentId);
+      
+      // Trong môi trường phát triển, vẫn sử dụng mock API
       const response = await axios.get('https://run.mocky.io/v3/6944656a-f738-4f43-9897-420ed18e2706');
 
       // Không lấy studentId từ localStorage, luôn sử dụng studentId được truyền vào
