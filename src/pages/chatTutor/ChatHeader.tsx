@@ -1,4 +1,4 @@
-// src/features/chat/components/ChatHeader.tsx
+// src/pages/chatTutor/ChatHeader.tsx
 import React from 'react';
 import {
   AppBar,
@@ -6,20 +6,15 @@ import {
   Typography,
   IconButton,
   Box,
-  Switch,
-  FormControlLabel,
   useTheme
 } from '@mui/material';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { styled } from '@mui/material/styles';
 
 interface ChatHeaderProps {
   title: string;
-  isDarkMode: boolean;
-  onToggleTheme: () => void;
   onOpenSettings?: () => void;
+  leftComponent?: React.ReactNode;
 }
 
 const HeaderToolbar = styled(Toolbar)(({ theme }) => ({
@@ -31,18 +26,14 @@ const HeaderToolbar = styled(Toolbar)(({ theme }) => ({
 
 const Title = styled(Typography)(({ theme }) => ({
   fontWeight: 'bold',
-}));
-
-const ThemeToggleContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
+  flexGrow: 1,
+  textAlign: 'center',
 }));
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
                                                  title,
-                                                 isDarkMode,
-                                                 onToggleTheme,
-                                                 onOpenSettings
+                                                 onOpenSettings,
+                                                 leftComponent
                                                }) => {
   const theme = useTheme();
 
@@ -54,30 +45,23 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       sx={{
         borderBottom: `1px solid ${theme.palette.divider}`,
         backgroundColor: theme.palette.background.paper,
+        width: '100%',
       }}
     >
       <HeaderToolbar>
+        {leftComponent &&
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {leftComponent}
+          </Box>
+        }
         <Title variant="h6" component="div">
           {title}
         </Title>
-
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <ThemeToggleContainer>
-            <LightModeIcon fontSize="small" sx={{ color: isDarkMode ? 'text.disabled' : 'warning.main' }} />
-            <Switch
-              size="small"
-              checked={isDarkMode}
-              onChange={onToggleTheme}
-              color="primary"
-            />
-            <DarkModeIcon fontSize="small" sx={{ color: isDarkMode ? 'info.main' : 'text.disabled' }} />
-          </ThemeToggleContainer>
-
           {onOpenSettings && (
             <IconButton
               size="small"
               onClick={onOpenSettings}
-              sx={{ ml: 1 }}
             >
               <SettingsIcon fontSize="small" />
             </IconButton>
