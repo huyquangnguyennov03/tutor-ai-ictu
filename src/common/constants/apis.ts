@@ -102,6 +102,21 @@ export const API_ENDPOINTS = {
     GET_SUBMISSIONS: "/api/assignments/:id/submissions",
   },
   
+  // Learning Path endpoints for course management and progress tracking
+  LEARNING_PATH: {
+    GET_ALL_COURSES: "/api/learning-path/courses",
+    GET_COURSE_DETAILS: "/api/learning-path/courses/:id",
+    GET_IN_PROGRESS_COURSES: "/api/learning-path/courses/in-progress",
+    GET_RECOMMENDED_COURSES: "/api/learning-path/courses/recommended",
+    UPDATE_COURSE_PROGRESS: "/api/learning-path/courses/:id/progress",
+    ENROLL_COURSE: "/api/learning-path/courses/:id/enroll",
+    GET_COURSE_MODULES: "/api/learning-path/courses/:id/modules",
+    GET_MODULE_CONTENT: "/api/learning-path/modules/:id",
+    COMPLETE_MODULE: "/api/learning-path/modules/:id/complete",
+    GET_COURSE_CERTIFICATES: "/api/learning-path/certificates",
+    DOWNLOAD_CERTIFICATE: "/api/learning-path/certificates/:id/download",
+  },
+  
   // Notification endpoints
   NOTIFICATIONS: {
     GET_NOTIFICATIONS: "/api/notifications",

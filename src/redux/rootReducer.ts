@@ -9,6 +9,7 @@ import teacherDashboardReducer from "@/redux/slices/teacherDashboardSlice"
 import teacherStudentChatReducer from "@/redux/slices/teacherStudentChatSlice"
 import chatTutorReducer from "@/redux/slices/chatTutorSlice"
 import assignmentManagementReducer from "@/redux/slices/assignmentManagementSlice";
+import learningPathReducer from "@/redux/slices/learningPathSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   teacherDashboard: teacherDashboardReducer,
   chat: teacherStudentChatReducer,
   chatTutor: chatTutorReducer,
-  assignmentManagement: assignmentManagementReducer
+  assignmentManagement: assignmentManagementReducer,
+  learningPath: learningPathReducer
 })
 
 export default rootReducer

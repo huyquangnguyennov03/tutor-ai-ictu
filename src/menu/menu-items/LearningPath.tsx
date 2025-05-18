@@ -1,11 +1,11 @@
 // assets
-import { MessageOutlined } from '@ant-design/icons';
+import { ScheduleOutlined  } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
 import { Roles } from "@/common/constants/roles"
 
 // icons
 const icons = {
-  MessageOutlined
+  ScheduleOutlined
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
@@ -20,7 +20,7 @@ const LearningPath: MenuItem = {
       title: 'Lộ trình học',
       type: 'item',
       url: '/learning-path',
-      icon: icons.MessageOutlined,
+      icon: icons.ScheduleOutlined,
       breadcrumbs: true,
       roles: [Roles.STUDENT],
     }
