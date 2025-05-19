@@ -501,10 +501,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           p: 3
         }}>
           <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
-            Chào mừng đến với hệ thống chat
+            Hệ thống chat
           </Typography>
           <Typography variant="body1" color="text.secondary" align="center">
-            Vui lòng chọn một {currentUser.role === 'app-admin' ? 'sinh viên' : 'giáo viên'} để bắt đầu cuộc trò chuyện
+            Đang tải cuộc trò chuyện...
           </Typography>
 
           {isMobile && (

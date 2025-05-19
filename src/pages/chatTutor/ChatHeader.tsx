@@ -54,7 +54,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             {leftComponent}
           </Box>
         }
-        <Title variant="h6" component="div">
+        <Title variant="h6">
           {title}
         </Title>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

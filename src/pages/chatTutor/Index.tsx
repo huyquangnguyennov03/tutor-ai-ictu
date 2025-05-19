@@ -67,14 +67,9 @@ const ChatWrapper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
   height: '100vh',
   maxHeight: '100vh',
-  width: '100%',
   overflow: 'hidden',
   borderRadius: 0,
   position: 'relative',
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
 }));
 
 const ChatContent = styled(Box)(() => ({
@@ -98,8 +93,6 @@ const TypingIndicator = styled(Box)(({ theme }) => ({
   marginLeft: theme.spacing(5),
   marginBottom: theme.spacing(2),
 }));
-
-// Sử dụng trực tiếp IconButton với sx prop
 
 const ChatTutor: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -183,9 +176,7 @@ const ChatTutor: React.FC = () => {
   const handleLoadSession = (sessionId: string) => {
     dispatch(setActiveSession(sessionId));
     dispatch(loadChatSession(sessionId));
-    if (isMobile) {
-      setDrawerOpen(false);
-    }
+    setDrawerOpen(false);
   };
 
   const handleUploadCode = (file: File, language = 'c', requestAnalysis = true) => {
@@ -212,6 +203,86 @@ const ChatTutor: React.FC = () => {
     dispatch(clearError());
   };
 
+  // Menu icon cho ChatHeader
+  const menuIcon = (
+    <IconButton
+      color="inherit"
+      onClick={handleToggleDrawer}
+      size="small"
+    >
+      <MenuIcon />
+    </IconButton>
+  );
+
+  // Helper function to render chat content
+  function renderChatContent() {
+    return (
+      <>
+        {/* Error message */}
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ m: 2 }}
+            onClose={handleCloseError}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {messages.length === 0 ? (
+          <WelcomeMessage
+            title="Chào mừng đến với Trợ Giảng AI"
+            subtitle="Trợ lý học tập cá nhân của bạn"
+            suggestions={suggestions || []}
+            onSelectSuggestion={handleSendMessage}
+          />
+        ) : (
+          <MessagesContainer>
+            {Array.isArray(messages) ? (
+              messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  onProvideFeedback={handleMessageFeedback}
+                />
+              ))
+            ) : (
+              <Typography color="error">
+                Error: Expected messages to be an array
+              </Typography>
+            )}
+
+            {isTyping && (
+              <TypingIndicator>
+                <CircularProgress size={16} thickness={5} sx={{ mr: 1 }} />
+                <Typography variant="body2" color="text.secondary">
+                  Đang trả lời...
+                </Typography>
+              </TypingIndicator>
+            )}
+
+            <div ref={messagesEndRef} />
+          </MessagesContainer>
+        )}
+
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          onClearChat={handleClearChat}
+          onSaveChat={handleSaveChat}
+          onUploadCode={handleUploadCode}
+          onToggleLearningMode={handleToggleLearningMode}
+          onToggleDirectMode={handleToggleDirectMode}
+          onToggleExplanationMode={handleToggleExplanationMode}
+          learningMode={learningContext.learningMode}
+          directMode={learningContext.directMode}
+          explanationMode={showExplanationMode}
+          disabled={isTyping || status === 'loading'}
+          placeholder={`Hỏi về ${currentTopic}...`}
+        />
+      </>
+    );
+  }
+
   return (
     <Box sx={{
       display: 'flex',
@@ -225,19 +296,27 @@ const ChatTutor: React.FC = () => {
         variant={isMobile ? "temporary" : "persistent"}
         open={drawerOpen}
         onClose={handleToggleDrawer}
+        anchor="left"
+        ModalProps={{
+          keepMounted: true, // Better mobile performance
+        }}
         sx={{
-          width: drawerWidth,
+          width: drawerOpen ? drawerWidth : 0,
           flexShrink: 0,
-          position: 'absolute',
-          zIndex: theme => theme.zIndex.drawer,
+          transition: theme => theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.standard,
+          }),
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            position: 'absolute',
+            position: 'relative',
+            height: '100%',
+            zIndex: theme => theme.zIndex.drawer,
           },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', p: 2, justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', p: 0.8, pl: 2, justifyContent: 'space-between' }}>
           <Typography variant="h6" component="div">
             Lịch sử trò chuyện
           </Typography>
@@ -246,7 +325,7 @@ const ChatTutor: React.FC = () => {
           </IconButton>
         </Box>
         <Divider />
-        <List>
+        <List sx={{ overflowY: 'auto' }}>
           {chatHistory.length > 0 ? (
             chatHistory.map((session) => (
               <ListItem
@@ -276,113 +355,36 @@ const ChatTutor: React.FC = () => {
       <ChatWrapper
         elevation={0}
         sx={{
+          width: '100%',
           flexGrow: 1,
-          marginLeft: { xs: 0, md: drawerOpen ? `${drawerWidth}px` : 0 },
-          width: { xs: '100%', md: drawerOpen ? `calc(100% - ${drawerWidth}px)` : '100%' },
-          transition: theme => theme.transitions.create(['margin', 'width'], {
+          transition: theme => theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
+            duration: theme.transitions.duration.standard,
           }),
+          position: 'relative'
         }}
       >
-        <IconButton
-          color="inherit"
-          onClick={handleToggleDrawer}
-          sx={{
-            display: drawerOpen && !isMobile ? 'none' : 'flex',
-            position: 'absolute',
-            top: theme.spacing(1),
-            left: theme.spacing(1),
-            zIndex: 1200,
-          }}
-        >
-          <MenuIcon />
-        </IconButton>
-
         <ChatHeader
           title={currentTopic}
-          isDarkMode={isDarkMode}
-          onToggleTheme={handleToggleTheme}
-          onOpenSettings={() => {}}
+          leftComponent={menuIcon}
         />
-
         <ChatContent>
-          {/* Error message */}
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ m: 2 }}
-              onClose={handleCloseError}
-            >
-              {error}
-            </Alert>
-          )}
-
-          {messages.length === 0 ? (
-            <WelcomeMessage
-              title="Chào mừng đến với Trợ Giảng AI"
-              subtitle="Trợ lý học tập cá nhân của bạn"
-              suggestions={suggestions || []}
-              onSelectSuggestion={handleSendMessage}
-            />
-          ) : (
-            <MessagesContainer>
-              {Array.isArray(messages) ? (
-                messages.map((message) => (
-                  <ChatMessage
-                    key={message.id}
-                    message={message}
-                    onProvideFeedback={handleMessageFeedback}
-                  />
-                ))
-              ) : (
-                <Typography color="error">
-                  Error: Expected messages to be an array
-                </Typography>
-              )}
-
-              {isTyping && (
-                <TypingIndicator>
-                  <CircularProgress size={16} thickness={5} sx={{ mr: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Đang trả lời...
-                  </Typography>
-                </TypingIndicator>
-              )}
-
-              <div ref={messagesEndRef} />
-            </MessagesContainer>
-          )}
-
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            onClearChat={handleClearChat}
-            onSaveChat={handleSaveChat}
-            onUploadCode={handleUploadCode}
-            onToggleLearningMode={handleToggleLearningMode}
-            onToggleDirectMode={handleToggleDirectMode}
-            onToggleExplanationMode={handleToggleExplanationMode}
-            learningMode={learningContext.learningMode}
-            directMode={learningContext.directMode}
-            explanationMode={showExplanationMode}
-            disabled={isTyping || status === 'loading'}
-            placeholder={`Hỏi về ${currentTopic}...`}
-          />
+          {renderChatContent()}
         </ChatContent>
-
-        {/* Success message for saving chat */}
-        <Snackbar
-          open={saveSuccess}
-          autoHideDuration={3000}
-          onClose={() => setSaveSuccess(false)}
-          message="Cuộc trò chuyện đã được lưu thành công"
-          action={
-            <IconButton size="small" color="inherit" onClick={() => setSaveSuccess(false)}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          }
-        />
       </ChatWrapper>
+
+      {/* Success message for saving chat */}
+      <Snackbar
+        open={saveSuccess}
+        autoHideDuration={3000}
+        onClose={() => setSaveSuccess(false)}
+        message="Cuộc trò chuyện đã được lưu thành công"
+        action={
+          <IconButton size="small" color="inherit" onClick={() => setSaveSuccess(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
     </Box>
   );
 };

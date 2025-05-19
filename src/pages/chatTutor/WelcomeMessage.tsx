@@ -13,7 +13,8 @@ import {
   CardActionArea,
   Tabs,
   Tab,
-  Button
+  Button,
+  Chip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -161,7 +162,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({
         <SmartToyIcon fontSize="large" />
       </LargeAvatar>
 
-      <WelcomeTitle variant="h4" component="h1">
+      <WelcomeTitle variant="h4" >
         {title}
       </WelcomeTitle>
 
@@ -195,10 +196,25 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({
               <SuggestionHeader variant="subtitle1">
                 Câu hỏi về khái niệm lập trình:
               </SuggestionHeader>
-              <QuickSuggestions
-                suggestions={conceptSuggestions.length > 0 ? conceptSuggestions : generalSuggestions}
-                onSelectSuggestion={onSelectSuggestion}
-              />
+              <Box sx={{ mt: 2 }}>
+                {(conceptSuggestions.length > 0 ? conceptSuggestions : generalSuggestions).map((suggestion) => (
+                  <Chip
+                    key={suggestion.id}
+                    label={suggestion.text}
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => onSelectSuggestion(suggestion.text)}
+                    sx={{ 
+                      m: 0.5,
+                      borderRadius: '16px',
+                      '&:hover': {
+                        backgroundColor: theme => theme.palette.primary.light,
+                        color: theme => theme.palette.primary.contrastText,
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
             </>
           )}
           

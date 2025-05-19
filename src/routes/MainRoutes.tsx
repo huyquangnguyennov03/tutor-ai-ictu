@@ -12,6 +12,7 @@ const Chat = Loadable(lazy(() => import("@/pages/chat/Index")))
 const ChatTutor = Loadable(lazy(() => import("@/pages/chatTutor/Index")))
 const Assignment = Loadable(lazy(() => import("@/pages/assignment/AssignmentManagement")))
 const LearningPath = Loadable(lazy(() => import("@/pages/learningPath")))
+const GameFi = Loadable(lazy(() => import("@/pages/gameFi/Index")))
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -54,6 +55,10 @@ const MainRoutes = {
     {
       path: "learning-path",
       element: <LearningPath/>
+    },
+    {
+      path: "game-fi",
+      element: <GameFi/>
     }
   ],
 }

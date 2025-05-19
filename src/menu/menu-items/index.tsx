@@ -6,12 +6,13 @@ import chat from "@/menu/menu-items/chat"
 import chatTutor from "@/menu/menu-items/chatTutor"
 import assignment from "@/menu/menu-items/assignment"
 import LearningPath from "@/menu/menu-items/LearningPath"
+import gameFi from "@/menu/menu-items/gameFi"
 // ==============================|| MENU ITEMS ||============================== //
 
 
 
 const menuItems = {
-  items: [ chatTutor, LearningProcess, assignment, dashboard, cdashboard, chat, LearningPath]
+  items: [ chatTutor, LearningProcess, assignment, dashboard, cdashboard, chat, LearningPath,gameFi]
 };
 
 export default menuItems;

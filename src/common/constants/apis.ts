@@ -117,6 +117,45 @@ export const API_ENDPOINTS = {
     DOWNLOAD_CERTIFICATE: "/api/learning-path/certificates/:id/download",
   },
   
+  // GameFi endpoints for educational gamification
+  GAMEFI: {
+    // Game management
+    GET_GAMES: "/api/gamefi/games",
+    GET_GAME_DETAILS: "/api/gamefi/games/:id",
+    START_GAME: "/api/gamefi/games/:id/start",
+    COMPLETE_GAME: "/api/gamefi/games/:id/complete",
+    SUBMIT_GAME_ANSWER: "/api/gamefi/games/:id/submit",
+    RATE_GAME: "/api/gamefi/games/:id/rate",
+    
+    // Quest management
+    GET_QUESTS: "/api/gamefi/quests",
+    GET_QUEST_DETAILS: "/api/gamefi/quests/:id",
+    START_QUEST: "/api/gamefi/quests/:id/start",
+    COMPLETE_QUEST: "/api/gamefi/quests/:id/complete",
+    
+    // User progress and rewards
+    GET_USER_PROFILE: "/api/gamefi/profile",
+    UPDATE_USER_PROFILE: "/api/gamefi/profile",
+    GET_USER_ACHIEVEMENTS: "/api/gamefi/achievements",
+    CLAIM_ACHIEVEMENT: "/api/gamefi/achievements/:id/claim",
+    GET_USER_REWARDS: "/api/gamefi/rewards",
+    CLAIM_REWARD: "/api/gamefi/rewards/:id/claim",
+    
+    // Leaderboard
+    GET_LEADERBOARD: "/api/gamefi/leaderboard",
+    GET_LEADERBOARD_BY_CATEGORY: "/api/gamefi/leaderboard/:category",
+    
+    // Daily challenges
+    GET_DAILY_CHALLENGES: "/api/gamefi/daily-challenges",
+    COMPLETE_DAILY_CHALLENGE: "/api/gamefi/daily-challenges/:id/complete",
+    
+    // Learning paths
+    GET_LEARNING_PATHS: "/api/gamefi/learning-paths",
+    GET_LEARNING_PATH_DETAILS: "/api/gamefi/learning-paths/:id",
+    JOIN_LEARNING_PATH: "/api/gamefi/learning-paths/:id/join",
+    UPDATE_LEARNING_PATH_PROGRESS: "/api/gamefi/learning-paths/:id/progress",
+  },
+  
   // Notification endpoints
   NOTIFICATIONS: {
     GET_NOTIFICATIONS: "/api/notifications",

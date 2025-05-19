@@ -215,8 +215,8 @@ export default function ChatNotification() {
     // Update unread count
     setUnread(prev => Math.max(0, prev - 1));
 
-    // Navigate to chat with the specific student
-    navigate(`/chat?studentId=${studentId}`);
+    // Navigate to chat with the specific student and conversation
+    navigate(`/chat?studentId=${studentId}&conversationId=${conversationId}`);
   };
 
   const getInitials = (name: string) => {

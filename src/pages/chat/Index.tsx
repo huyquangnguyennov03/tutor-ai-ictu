@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Grid,
   Box,
@@ -81,6 +82,7 @@ const MOCK_CURRENT_USER: User = {
 };
 
 const Index: React.FC = () => {
+  const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
@@ -99,6 +101,41 @@ const Index: React.FC = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, []);
+
+  // Handle URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const studentId = params.get('studentId');
+    const conversationId = params.get('conversationId');
+    
+    if (studentId) {
+      // Set the selected user from URL parameter
+      setSelectedUserId(studentId);
+      
+      // Mark messages as read if conversationId is provided
+      if (conversationId) {
+        setConversations(prevConversations =>
+          prevConversations.map(conv => {
+            if (conv.id === conversationId) {
+              const updatedMessages = conv.messages.map(msg => {
+                if (msg.sender !== currentUser.id && !msg.isRead) {
+                  return { ...msg, isRead: true };
+                }
+                return msg;
+              });
+
+              return {
+                ...conv,
+                messages: updatedMessages,
+                unreadCount: 0,
+              };
+            }
+            return conv;
+          })
+        );
+      }
+    }
+  }, [location.search, currentUser.id]);
 
   // Initialize socket connection
   useEffect(() => {

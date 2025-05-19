@@ -71,10 +71,10 @@ const initialState: ChatState = {
     { id: 'debug', text: 'Giúp tôi gỡ lỗi đoạn mã này', category: 'debug' },
     { id: 'memory', text: 'Cấp phát bộ nhớ là gì?', category: 'concept' },
     { id: 'struct', text: 'Cấu trúc struct trong C', category: 'concept' },
-    { id: 'algorithm', text: 'Thuật toán sắp xếp trong C', category: 'concept' },
-    { id: 'exercise', text: 'Bài tập về mảng trong C', category: 'exercise' },
-    { id: 'recursion', text: 'Giải thích về đệ quy', category: 'concept' },
-    { id: 'file', text: 'Cách đọc và ghi file trong C', category: 'concept' }
+    // { id: 'algorithm', text: 'Thuật toán sắp xếp trong C', category: 'concept' },
+    // { id: 'exercise', text: 'Bài tập về mảng trong C', category: 'exercise' },
+    // { id: 'recursion', text: 'Giải thích về đệ quy', category: 'concept' },
+    // { id: 'file', text: 'Cách đọc và ghi file trong C', category: 'concept' }
   ],
   currentTopic: 'Lập Trình C',
   learningContext: {
