@@ -15,7 +15,6 @@ import {
   CardContent,
   Button,
   Chip,
-  Stack,
   LinearProgress
 } from '@mui/material';
 import { Book, Layers, Code, School } from '@mui/icons-material';
@@ -43,31 +42,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     }
   };
 
-  const getLevelColor = (level: string) => {
-    switch(level) {
-      case 'Beginner':
-        return {
-          bgcolor: 'rgba(46, 125, 50, 0.1)',
-          color: 'rgb(46, 125, 50)'
-        };
-      case 'Intermediate':
-        return {
-          bgcolor: 'rgba(25, 118, 210, 0.1)',
-          color: 'rgb(25, 118, 210)'
-        };
-      case 'Advanced':
-        return {
-          bgcolor: 'rgba(237, 108, 2, 0.1)',
-          color: 'rgb(237, 108, 2)'
-        };
-      default:
-        return {
-          bgcolor: 'rgba(97, 97, 97, 0.1)',
-          color: 'rgb(97, 97, 97)'
-        };
-    }
-  };
-
   const handleContinueClick = () => {
     dispatch(selectCourse(course.id));
     dispatch(fetchCourseDetailsAsync(course.id));
@@ -80,9 +54,18 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   };
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0, 0, 0, 0.12)' }}>
-      <CardContent sx={{ flexGrow: 1, pb: 0 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid rgba(0, 0, 0, 0.12)',
+        borderRadius: 2,
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)'
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
           <Typography variant="h6" component="h2" fontWeight="bold">
             {course.title}
           </Typography>
@@ -93,64 +76,76 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
           {course.description}
         </Typography>
 
-        <Box mb={0.5} display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="text.secondary">
-            {course.completedModules} / {course.totalModules} bài học đã hoàn thành
-          </Typography>
-          <Typography variant="body2" fontWeight="medium">
-            {progress.toFixed(0)}%
-          </Typography>
+        <Box display="flex" flexDirection="column" mb={1}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+            <Typography variant="body2" color="text.secondary">
+              {course.completedModules} of {course.totalModules} modules completed
+            </Typography>
+            <Typography variant="body2" fontWeight="medium">
+              {progress.toFixed(0)}%
+            </Typography>
+          </Box>
+
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: '#e0e0e0',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#2962ff'
+              }
+            }}
+          />
         </Box>
 
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          sx={{
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: '#e0e0e0'
-          }}
-        />
-
-        <Stack direction="row" spacing={1} mt={3} mb={2}>
+        <Box display="flex" gap={1} mt={2}>
           <Chip
             label={course.level}
             size="small"
             sx={{
-              ...getLevelColor(course.level),
+              bgcolor: course.level === 'Beginner' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(25, 118, 210, 0.1)',
+              color: course.level === 'Beginner' ? 'rgb(46, 125, 50)' : 'rgb(25, 118, 210)',
               fontWeight: 500,
               fontSize: '0.75rem',
+              height: '24px'
             }}
           />
           <Chip
-            label={`${course.duration} tuần`}
+            label={`${course.duration} weeks`}
             size="small"
             variant="outlined"
             sx={{
               fontSize: '0.75rem',
               fontWeight: 500,
+              height: '24px'
             }}
           />
-        </Stack>
+        </Box>
       </CardContent>
 
-      <Button
-        fullWidth
-        variant="contained"
-        disableElevation
-        onClick={course.isEnrolled ? handleContinueClick : handleEnrollClick}
-        sx={{
-          mt: 'auto',
-          py: 1.5,
-          borderRadius: 0
-        }}
-      >
-        {!course.isEnrolled 
-          ? 'Đăng ký khóa học' 
-          : course.completedModules > 0 
-            ? 'Tiếp tục học' 
-            : 'Bắt đầu học'}
-      </Button>
+      <Box px={3} pb={3} width="100%">
+        <Button
+          fullWidth
+          variant="contained"
+          disableElevation
+          onClick={course.isEnrolled ? handleContinueClick : handleEnrollClick}
+          sx={{
+            py: 1.5,
+            borderRadius: 1.5,
+            backgroundColor: '#2962ff',
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          {!course.isEnrolled
+            ? 'Enroll Course'
+            : course.completedModules > 0
+              ? 'Continue Learning'
+              : 'Start Learning'}
+        </Button>
+      </Box>
     </Card>
   );
 };

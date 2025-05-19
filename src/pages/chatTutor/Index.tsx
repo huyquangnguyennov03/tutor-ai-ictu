@@ -67,9 +67,14 @@ const ChatWrapper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
   height: '100vh',
   maxHeight: '100vh',
+  width: '100%',
   overflow: 'hidden',
   borderRadius: 0,
   position: 'relative',
+  transition: theme.transitions.create(['margin', 'width'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
 }));
 
 const ChatContent = styled(Box)(() => ({
@@ -94,12 +99,7 @@ const TypingIndicator = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const MenuButton = styled(IconButton)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(1),
-  left: theme.spacing(1),
-  zIndex: 1200,
-}));
+// Sử dụng trực tiếp IconButton với sx prop
 
 const ChatTutor: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -213,7 +213,13 @@ const ChatTutor: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{
+      display: 'flex',
+      width: '100%',
+      maxWidth: '100vw',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
       {/* Drawer for chat history */}
       <Drawer
         variant={isMobile ? "temporary" : "persistent"}
@@ -222,9 +228,12 @@ const ChatTutor: React.FC = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
+          position: 'absolute',
+          zIndex: theme => theme.zIndex.drawer,
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            position: 'absolute',
           },
         }}
       >
@@ -264,12 +273,31 @@ const ChatTutor: React.FC = () => {
       </Drawer>
 
       {/* Main chat area */}
-      <ChatWrapper elevation={0}>
-        {isMobile && (
-          <MenuButton color="inherit" onClick={handleToggleDrawer}>
-            <MenuIcon />
-          </MenuButton>
-        )}
+      <ChatWrapper
+        elevation={0}
+        sx={{
+          flexGrow: 1,
+          marginLeft: { xs: 0, md: drawerOpen ? `${drawerWidth}px` : 0 },
+          width: { xs: '100%', md: drawerOpen ? `calc(100% - ${drawerWidth}px)` : '100%' },
+          transition: theme => theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        }}
+      >
+        <IconButton
+          color="inherit"
+          onClick={handleToggleDrawer}
+          sx={{
+            display: drawerOpen && !isMobile ? 'none' : 'flex',
+            position: 'absolute',
+            top: theme.spacing(1),
+            left: theme.spacing(1),
+            zIndex: 1200,
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
 
         <ChatHeader
           title={currentTopic}

@@ -11,12 +11,12 @@ const icons = {
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
 const LearningPath: MenuItem = {
-  id: 'chatTutor',
+  id: 'learningPath',
   title: '',
   type: 'group',
   children: [
     {
-      id: 'chatTutor',
+      id: 'learningPath',
       title: 'Lộ trình học',
       type: 'item',
       url: '/learning-path',
