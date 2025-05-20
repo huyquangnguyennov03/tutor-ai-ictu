@@ -14,9 +14,14 @@ import ChatBox from './ChatBox';
 import StudentProfile from './StudentProfile';
 import ChatToolbar from './ChatToolbar';
 import { User, Message, Conversation } from './types';
-import { mockUsers, mockConversations, mockStudentProgress } from '../../mockData/mockDataChat';
+import { mockStudentProgress } from '../../mockData/mockDataChat';
 import socketService from '../../services/socketService';
 import { Roles } from '../../common/constants/roles';
+import { 
+  generateUsersFromClassData, 
+  generateConversationsFromUsers, 
+  getClassIdFromName 
+} from '@/mockData/chatDataUtils';
 
 const theme = createTheme({
   palette: {
@@ -86,13 +91,17 @@ const Index: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [currentClass, setCurrentClass] = useState<string>("C Programming - C01");
   const [currentUser] = useState<User>(MOCK_CURRENT_USER);
+  const [users, setUsers] = useState<User[]>(() => 
+    generateUsersFromClassData(getClassIdFromName(currentClass))
+  );
+  const [conversations, setConversations] = useState<Conversation[]>(() => 
+    generateConversationsFromUsers(users, currentUser.id)
+  );
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isAITutorEnabled, setIsAITutorEnabled] = useState<boolean>(false);
-  const [currentClass, setCurrentClass] = useState<string>("C Programming - C01");
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -386,6 +395,18 @@ const Index: React.FC = () => {
 
   const handleClassChange = (className: string) => {
     setCurrentClass(className);
+    
+    // Cập nhật danh sách người dùng dựa trên lớp học mới
+    const classId = getClassIdFromName(className);
+    const newUsers = generateUsersFromClassData(classId);
+    setUsers(newUsers);
+    
+    // Cập nhật danh sách cuộc trò chuyện
+    const newConversations = generateConversationsFromUsers(newUsers, currentUser.id);
+    setConversations(newConversations);
+    
+    // Reset người dùng được chọn
+    setSelectedUserId(null);
   };
 
   const handleBackToList = () => {
@@ -519,6 +540,7 @@ const Index: React.FC = () => {
                     user={selectedUser}
                     progress={mockStudentProgress}
                     currentUserRole={currentUser.role}
+                    currentClass={currentClass}
                   />
                 )}
               </Box>

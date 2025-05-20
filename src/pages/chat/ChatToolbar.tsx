@@ -24,6 +24,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ClassIcon from '@mui/icons-material/Class';
 import CloseIcon from '@mui/icons-material/Close';
 import { Roles } from '@/common/constants/roles';
+import { courseOptions } from '@/mockData/classDashboardData';
 
 interface ChatToolbarProps {
   currentClass: string;
@@ -193,10 +194,11 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
                 }
               }}
             >
-              <MenuItem value="C Programming - C01">C Programming - C01</MenuItem>
-              <MenuItem value="Java Programming - J01">Java Programming - J01</MenuItem>
-              <MenuItem value="Python - P01">Python - P01</MenuItem>
-              <MenuItem value="Web Development - W01">Web Development - W01</MenuItem>
+              {courseOptions.map((course) => (
+                <MenuItem key={course.id} value={course.name}>
+                  {course.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </DialogContent>

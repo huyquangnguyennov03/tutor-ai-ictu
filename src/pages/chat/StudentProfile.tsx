@@ -40,14 +40,16 @@ import EmailIcon from '@mui/icons-material/Email';
 import SchoolIcon from '@mui/icons-material/School';
 import { User, StudentProgress } from './types';
 import { Roles } from '../../common/constants/roles';
+import { generateDashboardData } from '@/mockData/classDashboardData';
 
 interface StudentProfileProps {
   user: User | null;
   progress: StudentProgress;
   currentUserRole: Roles;
+  currentClass?: string;
 }
 
-const StudentProfile: React.FC<StudentProfileProps> = ({ user, progress, currentUserRole }) => {
+const StudentProfile: React.FC<StudentProfileProps> = ({ user, progress, currentUserRole, currentClass = 'C Programming - C01' }) => {
   const [reminderOpen, setReminderOpen] = React.useState(false);
 
   const handleOpenReminder = () => {
@@ -166,7 +168,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ user, progress, current
                 </ListItemIcon>
                 <ListItemText
                   primary="Lớp"
-                  secondary="C Programming - C01"
+                  secondary={currentClass}
                 />
               </ListItem>
             )}
