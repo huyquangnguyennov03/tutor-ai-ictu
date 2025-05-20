@@ -10,6 +10,9 @@ import ImprovementSuggestions from './ImprovementSuggestions';
 import { AppDispatch } from '@/redux/store';
 import { useParams, useNavigate } from 'react-router-dom';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import { useAppSelector } from '@/redux/hooks';
+import { selectRole } from '@/redux/slices/authSlice';
+import { Roles } from '@/common/constants/roles';
 
 // Create a theme instance
 const theme = createTheme({
@@ -44,6 +47,8 @@ const Dashboard: React.FC = () => {
   const status = useSelector(selectStatus);
   const errorMessage = useSelector(selectErrorMessage);
   const navigate = useNavigate();
+  const userRole = useAppSelector(selectRole);
+  const isTeacher = userRole === Roles.TEACHER;
 
   // Lấy MSSV từ URL parameter
   const { studentId } = useParams<{ studentId: string }>();
@@ -66,14 +71,16 @@ const Dashboard: React.FC = () => {
         <Typography variant="h4" component="h1">
           Bảng Tiến Độ Học Tập {studentId && `- MSSV: ${studentId}`}
         </Typography>
-        <IconButton
-          color="primary"
-          aria-label="back to course progress"
-          onClick={handleBack}
-          sx={{ ml: 2 }}
-        >
-          <ExitToAppIcon />
-        </IconButton>
+        {isTeacher && (
+          <IconButton
+            color="primary"
+            aria-label="back to course progress"
+            onClick={handleBack}
+            sx={{ ml: 2 }}
+          >
+            <ExitToAppIcon />
+          </IconButton>
+        )}
       </Box>
 
       {status === 'loading' && (

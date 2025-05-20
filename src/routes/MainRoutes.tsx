@@ -1,9 +1,13 @@
 import { lazy } from "react"
+import { Navigate } from "react-router-dom"
 // import { AuthProvider } from "@/contexts/AuthProvider"
 
 // project import
 import Loadable from "@/components/Loadable"
 import Dashboard from "@/layout/Dashboard"
+import { useAppSelector } from "@/redux/hooks"
+import { selectRole, selectUserInfo } from "@/redux/slices/authSlice"
+import { Roles } from "@/common/constants/roles"
 
 const DashboardDefault = Loadable(lazy(() => import("@/pages/dashboard/index")))
 const LearningProcess = Loadable(lazy(() => import("@/pages/learningProcess/")))
@@ -13,6 +17,25 @@ const ChatTutor = Loadable(lazy(() => import("@/pages/chatTutor/Index")))
 const Assignment = Loadable(lazy(() => import("@/pages/assignment/AssignmentManagement")))
 const LearningPath = Loadable(lazy(() => import("@/pages/learningPath")))
 const GameFi = Loadable(lazy(() => import("@/pages/gameFi/Index")))
+
+// Component to redirect based on user role
+const RoleBasedRedirect = () => {
+  const userRole = useAppSelector(selectRole)
+  const userInfo = useAppSelector(selectUserInfo)
+
+  if (userRole === Roles.TEACHER) {
+    return <Navigate to="/tong-quan-tien-do" replace />
+  } else if (userRole === Roles.STUDENT) {
+    // Sử dụng sub từ userInfo làm studentId nếu có
+    // const studentId = userInfo?.sub || "current"
+    const studentId = "C01001"
+    return <Navigate to={`/tien-do-hoc-tap/${studentId}`} replace />
+  }
+
+  // Default fallback
+  return <DashboardDefault />
+}
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -21,14 +44,14 @@ const MainRoutes = {
   children: [
     {
       path: "/",
-      element: <DashboardDefault />,
+      element: <RoleBasedRedirect />,
     },
     {
       path: "trang-chu",
       children: [
         {
           path: "",
-          element: <DashboardDefault />,
+          element: <RoleBasedRedirect />,
         },
       ],
     },
