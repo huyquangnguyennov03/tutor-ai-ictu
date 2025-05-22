@@ -49,7 +49,7 @@ const LearningDashboard: React.FC = () => {
   const isLoading = status === 'loading';
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box mb={2}>
         <Typography variant="h4" component="h1" fontWeight="bold">
           Lộ trình học tập
