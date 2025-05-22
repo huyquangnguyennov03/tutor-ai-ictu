@@ -429,7 +429,13 @@ const GamesList: React.FC<GamesListProps> = ({ games, onStartGame }) => {
                         icon={<NewReleasesIcon />}
                         label="New"
                         size="small"
-                        color="secondary"
+                        sx={{ 
+                          bgcolor: 'orange', 
+                          color: 'white',
+                          '& .MuiChip-icon': {
+                            color: 'white'
+                          }
+                        }}
                       />
                     )}
                     {game.isFeatured && (

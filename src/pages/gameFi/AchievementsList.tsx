@@ -124,6 +124,21 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // Update status filter based on tab selection
+    switch (newValue) {
+      case 0: // All
+        setStatusFilter('all');
+        break;
+      case 1: // Unlocked
+        setStatusFilter('unlocked');
+        break;
+      case 2: // In Progress
+        setStatusFilter('in_progress');
+        break;
+      case 3: // Locked
+        setStatusFilter('locked');
+        break;
+    }
   };
   
   // Handle search input change
@@ -143,7 +158,24 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
   
   // Handle status filter change
   const handleStatusChange = (event: SelectChangeEvent) => {
-    setStatusFilter(event.target.value);
+    const newStatus = event.target.value;
+    setStatusFilter(newStatus);
+    
+    // Update tab value based on status filter
+    switch (newStatus) {
+      case 'all':
+        setTabValue(0);
+        break;
+      case 'unlocked':
+        setTabValue(1);
+        break;
+      case 'in_progress':
+        setTabValue(2);
+        break;
+      case 'locked':
+        setTabValue(3);
+        break;
+    }
   };
   
   // Get unique categories
@@ -165,9 +197,11 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
     const matchesRarity = rarityFilter === '' || achievement.rarity === rarityFilter;
     
     // Status filter
+    const isInProgress = !achievement.isUnlocked && achievement.progress > 0 && achievement.progress < 100;
     const matchesStatus = statusFilter === 'all' ||
                           (statusFilter === 'unlocked' && achievement.isUnlocked) ||
-                          (statusFilter === 'locked' && !achievement.isUnlocked);
+                          (statusFilter === 'in_progress' && isInProgress) ||
+                          (statusFilter === 'locked' && !achievement.isUnlocked && achievement.progress === 0);
     
     return matchesSearch && matchesCategory && matchesRarity && matchesStatus;
   });
@@ -262,6 +296,7 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
                   >
                     <MenuItem value="all">All</MenuItem>
                     <MenuItem value="unlocked">Unlocked</MenuItem>
+                    <MenuItem value="in_progress">In Progress</MenuItem>
                     <MenuItem value="locked">Locked</MenuItem>
                   </Select>
                 </FormControl>
