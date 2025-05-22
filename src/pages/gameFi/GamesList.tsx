@@ -1,4 +1,3 @@
-// src/pages/gameFi/GamesList.tsx
 import React, { useState } from 'react';
 import {
   Box,

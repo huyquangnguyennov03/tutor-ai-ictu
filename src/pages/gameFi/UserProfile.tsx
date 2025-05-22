@@ -1,4 +1,3 @@
-// src/pages/gameFi/components/UserProfile.tsx
 import React from 'react';
 import {
   Box,

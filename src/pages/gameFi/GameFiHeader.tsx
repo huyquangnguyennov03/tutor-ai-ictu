@@ -1,4 +1,3 @@
-// src/pages/gameFi/GameFiHeader.tsx
 import React from 'react';
 import {
   AppBar,
@@ -16,12 +15,15 @@ import { styled } from '@mui/material/styles';
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+  borderRadius: '6px', // Add rounded corners
+  margin: '8px 0', // Add some margin for better visual separation
 }));
 
 const LevelChip = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
   color: theme.palette.secondary.contrastText,
   fontWeight: 'bold',
+  borderRadius: '20px', // Add rounded corners
   '& .MuiChip-label': {
     padding: '0 10px',
   }
@@ -31,6 +33,7 @@ const TokenChip = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.warning.light,
   color: theme.palette.warning.contrastText,
   fontWeight: 'bold',
+  borderRadius: '20px', // Add rounded corners
   '& .MuiChip-label': {
     padding: '0 10px',
   }
@@ -40,6 +43,7 @@ const GradeChip = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.success.main,
   color: theme.palette.success.contrastText,
   fontWeight: 'bold',
+  borderRadius: '20px', // Add rounded corners
   '& .MuiChip-label': {
     padding: '0 10px',
   }
@@ -49,6 +53,7 @@ const NotificationChip = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     backgroundColor: theme.palette.error.main,
     color: theme.palette.error.contrastText,
+    borderRadius: '10px', // Add rounded corners
   }
 }));
 
@@ -59,28 +64,28 @@ const GameFiHeader: React.FC = () => {
   return (
     <StyledAppBar position="static">
       <Toolbar>
-        <Typography 
-          variant={isMobile ? "h6" : "h5"} 
-          component="div" 
-          sx={{ 
-            flexGrow: 1, 
+        <Typography
+          variant={isMobile ? "h6" : "h5"}
+          component="div"
+          sx={{
+            flexGrow: 1,
             fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
             gap: 1
           }}
         >
-          <span role="img" aria-label="gamepad">🎮</span> 
+          <span role="img" aria-label="gamepad">🎮</span>
           EduQuest
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <LevelChip 
-            label="Level 38" 
+          <LevelChip
+            label="Level 38"
             size="medium"
           />
-          <TokenChip 
-            label="2450 Tokens" 
+          <TokenChip
+            label="2450 Tokens"
             size="medium"
           />
           <NotificationChip badgeContent={4} color="error">

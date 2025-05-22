@@ -1,4 +1,3 @@
-// src/pages/gameFi/Index.tsx
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -80,10 +79,10 @@ const GameFi: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  
+
   // State for tabs
   const [tabValue, setTabValue] = useState(0);
-  
+
   // State for data
   const [games, setGames] = useState<Game[]>([]);
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -92,11 +91,11 @@ const GameFi: React.FC = () => {
   const [userProfile, setUserProfile] = useState<GameFiProfile | null>(null);
   const [dailyChallenges, setDailyChallenges] = useState<any[]>([]);
   const [learningPaths, setLearningPaths] = useState<any[]>([]);
-  
+
   // State for loading and errors
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // State for notifications
   const [notification, setNotification] = useState({
     open: false,
@@ -128,7 +127,7 @@ const GameFi: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // In a real application, these would be API calls
         // For now, we're using mock data with a timeout to simulate API calls
         setTimeout(() => {
@@ -208,30 +207,30 @@ const GameFi: React.FC = () => {
   }
 
   return (
-    <Box sx={{ 
-      flexGrow: 1, 
+    <Box sx={{
+      flexGrow: 1,
       bgcolor: theme => theme.palette.background.default,
       minHeight: '100vh',
       pb: 4
     }}>
-      {/* GameFi Header */}
-      <GameFiHeader />
-      
-      <Container maxWidth="xl" sx={{ mt: 2 }}>
-        <Grid container spacing={3}>
+      <Container maxWidth="xl" sx={{ pt: 1 }}>
+        {/* GameFi Header */}
+        <GameFiHeader />
+
+        <Grid container spacing={3} sx={{ mt: 2 }}>
           {/* User Profile Section - Only visible on larger screens as a sidebar */}
           {!isMobile && (
             <Grid item xs={12} md={3}>
               <UserProfile profile={userProfile} />
               <Box sx={{ mt: 3 }}>
-                <DailyChallenges 
-                  challenges={dailyChallenges} 
-                  onStartChallenge={handleStartDailyChallenge} 
+                <DailyChallenges
+                  challenges={dailyChallenges}
+                  onStartChallenge={handleStartDailyChallenge}
                 />
               </Box>
             </Grid>
           )}
-          
+
           {/* Main Content Area */}
           <Grid item xs={12} md={9}>
             <Paper sx={{ width: '100%' }}>
@@ -260,51 +259,51 @@ const GameFi: React.FC = () => {
                 {isMobile && <Tab label="Profile" {...a11yProps(5)} />}
                 {isMobile && <Tab label="Daily Challenges" {...a11yProps(6)} />}
               </Tabs>
-              
+
               {/* Games Tab */}
               <TabPanel value={tabValue} index={0}>
                 <GamesList games={games} onStartGame={handleStartGame} />
               </TabPanel>
-              
+
               {/* Quests Tab */}
               <TabPanel value={tabValue} index={1}>
                 <QuestsList quests={quests} onStartQuest={handleStartQuest} />
               </TabPanel>
-              
+
               {/* Learning Paths Tab */}
               <TabPanel value={tabValue} index={2}>
-                <LearningPaths 
-                  learningPaths={learningPaths} 
-                  onJoinLearningPath={handleJoinLearningPath} 
+                <LearningPaths
+                  learningPaths={learningPaths}
+                  onJoinLearningPath={handleJoinLearningPath}
                 />
               </TabPanel>
-              
+
               {/* Achievements Tab */}
               <TabPanel value={tabValue} index={3}>
-                <AchievementsList 
-                  achievements={achievements} 
-                  onClaimAchievement={handleClaimAchievement} 
+                <AchievementsList
+                  achievements={achievements}
+                  onClaimAchievement={handleClaimAchievement}
                 />
               </TabPanel>
-              
+
               {/* Leaderboard Tab */}
               <TabPanel value={tabValue} index={4}>
                 <Leaderboard leaderboard={leaderboard} />
               </TabPanel>
-              
+
               {/* Mobile-only Profile Tab */}
               {isMobile && (
                 <TabPanel value={tabValue} index={5}>
                   <UserProfile profile={userProfile} />
                 </TabPanel>
               )}
-              
+
               {/* Mobile-only Daily Challenges Tab */}
               {isMobile && (
                 <TabPanel value={tabValue} index={6}>
-                  <DailyChallenges 
-                    challenges={dailyChallenges} 
-                    onStartChallenge={handleStartDailyChallenge} 
+                  <DailyChallenges
+                    challenges={dailyChallenges}
+                    onStartChallenge={handleStartDailyChallenge}
                   />
                 </TabPanel>
               )}
@@ -312,7 +311,7 @@ const GameFi: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
-      
+
       {/* Notification Snackbar */}
       <Snackbar
         open={notification.open}
@@ -320,9 +319,9 @@ const GameFi: React.FC = () => {
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseNotification} 
-          severity={notification.severity} 
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification.severity}
           sx={{ width: '100%' }}
         >
           {notification.message}

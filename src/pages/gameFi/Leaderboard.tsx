@@ -1,4 +1,3 @@
-// src/pages/gameFi/components/Leaderboard.tsx
 import React, { useState } from 'react';
 import {
   Box,

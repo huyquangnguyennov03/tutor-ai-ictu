@@ -1,4 +1,3 @@
-// src/pages/gameFi/components/QuestsList.tsx
 import React from 'react';
 import {
   Box,
