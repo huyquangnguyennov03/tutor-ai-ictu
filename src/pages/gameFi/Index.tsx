@@ -59,7 +59,7 @@ const TabPanel = (props: TabPanelProps) => {
       style={{ width: '100%' }}
     >
       {value === index && (
-        <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {children}
         </Box>
       )}
@@ -213,14 +213,12 @@ const GameFi: React.FC = () => {
       minHeight: '100vh',
       pb: 4
     }}>
-      <Container maxWidth="xl" sx={{ pt: 1 }}>
-        {/* GameFi Header */}
+      <Container maxWidth="xl" disableGutters>
         <GameFiHeader />
 
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          {/* User Profile Section - Only visible on larger screens as a sidebar */}
+        <Grid container sx={{ mt: 2 }}>
           {!isMobile && (
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={3} sx={{ pr: 2 }}>
               <UserProfile profile={userProfile} />
               <Box sx={{ mt: 3 }}>
                 <DailyChallenges

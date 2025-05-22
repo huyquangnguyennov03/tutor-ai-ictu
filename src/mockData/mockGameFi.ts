@@ -463,7 +463,7 @@ export const mockAchievements: Achievement[] = [
     id: uuidv4(),
     name: 'Full Stack Developer',
     description: 'Master both frontend and backend challenges',
-    imageUrl: '/assets/achievements/full-stack.png',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ54sTwFXzfG4-623RpdYBiJn9KjYIzI5qgUDHo6-4S2eNlA80qwn1Z6WG1f93-CaAIFE&usqp=CAU',
     isUnlocked: false,
     progress: 70,
     requiredValue: 10,
@@ -656,7 +656,7 @@ export const mockLearningPaths = [
     progress: 45,
     totalGames: 12,
     completedGames: 5,
-    imageUrl: '/assets/learning-paths/full-stack.png',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ54sTwFXzfG4-623RpdYBiJn9KjYIzI5qgUDHo6-4S2eNlA80qwn1Z6WG1f93-CaAIFE&usqp=CAU',
     estimatedTime: '3 months',
     level: DifficultyLevel.INTERMEDIATE
   },
@@ -668,7 +668,7 @@ export const mockLearningPaths = [
     progress: 20,
     totalGames: 10,
     completedGames: 2,
-    imageUrl: '/assets/learning-paths/data-science.png',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdPj3EGP36Vn1IrCMQUm9m3-xsrn2Awe5Nvw&s',
     estimatedTime: '2 months',
     level: DifficultyLevel.INTERMEDIATE
   },
@@ -680,7 +680,7 @@ export const mockLearningPaths = [
     progress: 10,
     totalGames: 15,
     completedGames: 1,
-    imageUrl: '/assets/learning-paths/cybersecurity.png',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTG7XcVLVZMrqwZ_wSoG-Zl3x1ZjICAsAGzqQ&s',
     estimatedTime: '4 months',
     level: DifficultyLevel.ADVANCED
   }
