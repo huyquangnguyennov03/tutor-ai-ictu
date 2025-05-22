@@ -1,22 +1,38 @@
 import { Message, Conversation, User } from '../pages/chat/types';
 import { mockUsers, mockConversations } from '../mockData/mockDataChat';
-import { Roles } from "@/common/constants/roles"
+import { Roles } from "@/common/constants/roles";
+import { generateUsersFromClassData, generateConversationsFromUsers, getClassIdFromName } from '@/mockData/chatDataUtils';
 
 // Define event types
 type EventCallback = (data: any) => void;
 type EventType = 'newMessage' | 'messageRead' | 'conversationUpdate';
 
 class ChatNotificationService {
-  private conversations: Conversation[] = [...mockConversations];
-  private users: User[] = [...mockUsers];
+  private conversations: Conversation[] = [];
+  private users: User[] = [];
   private listeners: Map<EventType, EventCallback[]> = new Map();
   private currentUserId: string = 'teacher1'; // Default to teacher for demo
+  private currentClass: string = "C Programming - C01"; // Default class
 
   constructor() {
     // Initialize listeners map
     this.listeners.set('newMessage', []);
     this.listeners.set('messageRead', []);
     this.listeners.set('conversationUpdate', []);
+    
+    // Initialize with default class data
+    this.updateClassData(this.currentClass);
+  }
+  
+  // Update data based on class
+  updateClassData(className: string) {
+    this.currentClass = className;
+    const classId = getClassIdFromName(className);
+    this.users = generateUsersFromClassData(classId);
+    this.conversations = generateConversationsFromUsers(this.users, this.currentUserId);
+    
+    // Notify listeners of the update
+    this.notifyListeners('conversationUpdate', { conversations: this.conversations });
   }
 
   // Get all conversations
@@ -117,6 +133,12 @@ class ChatNotificationService {
   setCurrentUserId(userId: string): void {
     this.currentUserId = userId;
   }
+  
+  // Sync conversations with Chat component
+  syncConversations(conversations: Conversation[]): void {
+    this.conversations = [...conversations];
+    this.notifyListeners('conversationUpdate', { conversations: this.conversations });
+  }
 
   // Add event listener
   addEventListener(event: EventType, callback: EventCallback): void {
@@ -137,7 +159,7 @@ class ChatNotificationService {
   }
 
   // Notify all listeners of an event
-  private notifyListeners(event: EventType, data: any): void {
+  notifyListeners(event: EventType, data: any): void {
     const listeners = this.listeners.get(event) || [];
     listeners.forEach(callback => {
       try {

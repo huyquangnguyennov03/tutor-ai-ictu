@@ -16,6 +16,7 @@ import ChatToolbar from './ChatToolbar';
 import { User, Message, Conversation } from './types';
 import { mockStudentProgress } from '../../mockData/mockDataChat';
 import socketService from '../../services/socketService';
+import chatNotificationService from '../../services/chatNotificationService';
 import { Roles } from '../../common/constants/roles';
 import { 
   generateUsersFromClassData, 
@@ -83,7 +84,7 @@ const MOCK_CURRENT_USER: User = {
   role: Roles.TEACHER,
   status: 'online',
   lastActive: new Date().toISOString(),
-  avatar: 'https://mui.com/static/images/avatar/6.jpg',
+  avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7wqd4R2yKC8t-wbUjY6LfUUHRJxtdaN6WHQ&s',
 };
 
 const Index: React.FC = () => {
@@ -184,6 +185,28 @@ const Index: React.FC = () => {
     };
   }, [selectedUserId]);
 
+  // Sync with chatNotificationService
+  useEffect(() => {
+    // Sync conversations with chatNotificationService
+    chatNotificationService.syncConversations(conversations);
+    
+    // Listen for navigation events from ChatNotification
+    const handleConversationUpdate = (data: any) => {
+      if (data.navigatedFromNotification && data.studentId) {
+        // Set the selected user from notification
+        setSelectedUserId(data.studentId);
+      }
+    };
+    
+    // Register event listener
+    chatNotificationService.addEventListener('conversationUpdate', handleConversationUpdate);
+    
+    // Cleanup on unmount
+    return () => {
+      chatNotificationService.removeEventListener('conversationUpdate', handleConversationUpdate);
+    };
+  }, [conversations]);
+
   // Find the selected user
   const selectedUser = users.find(user => user.id === selectedUserId) || null;
 
@@ -267,7 +290,20 @@ const Index: React.FC = () => {
       setMobileDrawerOpen(false);
     }
 
+    // Find the conversation with this user
+    const conversation = conversations.find(
+      conv => 
+        conv.participants.includes(currentUser.id) &&
+        conv.participants.includes(userId)
+    );
+
     // Mark messages as read when selecting a conversation
+    if (conversation) {
+      // Mark messages as read in chatNotificationService
+      chatNotificationService.markMessagesAsRead(conversation.id);
+    }
+
+    // Mark messages as read in local state
     setConversations(prevConversations =>
       prevConversations.map(conv => {
         if (
@@ -404,6 +440,9 @@ const Index: React.FC = () => {
     // Cập nhật danh sách cuộc trò chuyện
     const newConversations = generateConversationsFromUsers(newUsers, currentUser.id);
     setConversations(newConversations);
+    
+    // Sync with chatNotificationService
+    chatNotificationService.updateClassData(className);
     
     // Reset người dùng được chọn
     setSelectedUserId(null);

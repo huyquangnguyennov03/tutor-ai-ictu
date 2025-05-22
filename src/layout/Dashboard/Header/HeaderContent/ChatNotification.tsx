@@ -217,6 +217,13 @@ export default function ChatNotification() {
 
     // Navigate to chat with the specific student and conversation
     navigate(`/chat?studentId=${studentId}&conversationId=${conversationId}`);
+    
+    // Trigger a notification that the user has navigated to chat from a notification
+    chatNotificationService.notifyListeners('conversationUpdate', { 
+      navigatedFromNotification: true,
+      studentId,
+      conversationId
+    });
   };
 
   const getInitials = (name: string) => {

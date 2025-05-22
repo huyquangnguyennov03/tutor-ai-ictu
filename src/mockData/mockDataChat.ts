@@ -54,7 +54,7 @@ export const mockUsers: User[] = [
     role: Roles.TEACHER,
     status: 'online',
     lastActive: new Date().toISOString(),
-    avatar: 'https://mui.com/static/images/avatar/6.jpg',
+    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7wqd4R2yKC8t-wbUjY6LfUUHRJxtdaN6WHQ&s',
   },
 ];
 
