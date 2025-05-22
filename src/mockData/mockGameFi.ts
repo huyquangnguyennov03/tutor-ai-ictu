@@ -98,6 +98,7 @@ export interface Achievement {
   description: string;
   imageUrl: string;
   isUnlocked: boolean;
+  isClaimed: boolean;
   progress: number; // percentage
   requiredValue: number;
   currentValue: number;
@@ -400,11 +401,12 @@ export const mockQuests: Quest[] = [
 // Mock Achievements Data
 export const mockAchievements: Achievement[] = [
   {
-    id: uuidv4(),
+    id: "code-warrior-achievement",
     name: 'Code Warrior',
     description: 'Complete 10 coding challenges',
     imageUrl: 'https://png.pngtree.com/png-clipart/20230617/ourlarge/pngtree-3d-golden-trophy-champion-isolated-image-transparent-background-png-image_7153527.png',
     isUnlocked: true,
+    isClaimed: true,
     progress: 100,
     requiredValue: 10,
     currentValue: 12,
@@ -412,23 +414,25 @@ export const mockAchievements: Achievement[] = [
     rarity: 'Common'
   },
   {
-    id: uuidv4(),
+    id: "quiz-master-achievement",
     name: 'Quiz Master',
     description: 'Score 90% or higher on 5 quizzes',
     imageUrl: 'https://img.pikbest.com/origin/09/24/46/36upIkbEsTS4V.png!w700wp',
     isUnlocked: false,
-    progress: 60,
+    isClaimed: false,
+    progress: 0,
     requiredValue: 5,
-    currentValue: 3,
+    currentValue: 0,
     category: 'Quizzes',
     rarity: 'Uncommon'
   },
   {
-    id: uuidv4(),
+    id: "consistent-learner-achievement",
     name: 'Consistent Learner',
     description: 'Maintain a 7-day learning streak',
     imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThV1TIV1z1SsHrNzp06RCyYiCal5qIC4Twv5a92s7OgAUbWdbJd7H7eGn6ukaTyfHG7Ss&usqp=CAU',
     isUnlocked: true,
+    isClaimed: true,
     progress: 100,
     requiredValue: 7,
     currentValue: 9,
@@ -436,11 +440,12 @@ export const mockAchievements: Achievement[] = [
     rarity: 'Common'
   },
   {
-    id: uuidv4(),
+    id: "algorithm-genius-achievement",
     name: 'Algorithm Genius',
     description: 'Solve 20 algorithm challenges',
     imageUrl: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgx1mdXei_LG7JtWz8a6uCoKAYyknKnT501pJObJPRzTghmZiXc9NtK4PN8bbqBKxM9KiXP_q87bxmOeP4o8uVqO6gJ7O0vyzLygJHubwXX-t_PTsHKU0I8IiDWRAYl3L8kjQjVh4rXPsNyLVi7ZZCpK9c0ETUYWCbMMCML-O398gNciNAWfq35RRAZhDk/s1600/(%20Anhpng.com%20)%20-%20C%C3%9AP%20-%20HUY%20CH%C6%AF%C6%A0NG%20-%20HUY%20HI%E1%BB%86U%20(120).png',
     isUnlocked: false,
+    isClaimed: false,
     progress: 45,
     requiredValue: 20,
     currentValue: 9,
@@ -595,19 +600,14 @@ export const mockUserProfile: GameFiProfile = {
   streak: 9,
   badges: [
     {
-      id: uuidv4(),
+      id: "code-warrior-achievement",
       name: 'Code Warrior',
-      imageUrl: '/assets/badges/code-warrior.png'
+      imageUrl: 'https://png.pngtree.com/png-clipart/20230617/ourlarge/pngtree-3d-golden-trophy-champion-isolated-image-transparent-background-png-image_7153527.png'
     },
     {
-      id: uuidv4(),
+      id: "consistent-learner-achievement",
       name: 'Consistent Learner',
-      imageUrl: '/assets/badges/consistent-learner.png'
-    },
-    {
-      id: uuidv4(),
-      name: 'Algorithm Apprentice',
-      imageUrl: '/assets/badges/algorithm-apprentice.png'
+      imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThV1TIV1z1SsHrNzp06RCyYiCal5qIC4Twv5a92s7OgAUbWdbJd7H7eGn6ukaTyfHG7Ss&usqp=CAU'
     }
   ]
 };

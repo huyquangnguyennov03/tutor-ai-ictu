@@ -189,9 +189,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ profile }) => {
                 src={badge.imageUrl} 
                 alt={badge.name}
                 sx={{ 
-                  width: 40, 
-                  height: 40,
-                  border: '2px solid gold'
+                  width: 50, 
+                  height: 50,
+                  border: '2px solid gold',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  margin: '4px'
                 }}
               />
             </Tooltip>

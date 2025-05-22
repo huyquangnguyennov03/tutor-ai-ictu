@@ -197,11 +197,12 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
     const matchesRarity = rarityFilter === '' || achievement.rarity === rarityFilter;
     
     // Status filter
-    const isInProgress = !achievement.isUnlocked && achievement.progress > 0 && achievement.progress < 100;
+    const isInProgress = !achievement.isUnlocked && achievement.progress > 0;
+    const isLocked = !achievement.isUnlocked && achievement.progress === 0;
     const matchesStatus = statusFilter === 'all' ||
                           (statusFilter === 'unlocked' && achievement.isUnlocked) ||
                           (statusFilter === 'in_progress' && isInProgress) ||
-                          (statusFilter === 'locked' && !achievement.isUnlocked && achievement.progress === 0);
+                          (statusFilter === 'locked' && isLocked);
     
     return matchesSearch && matchesCategory && matchesRarity && matchesStatus;
   });
@@ -251,7 +252,7 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
           
           <Grid item xs={12} md={6}>
             <Grid container spacing={1}>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <FormControl fullWidth size="small">
                   <InputLabel id="category-filter-label">Category</InputLabel>
                   <Select
@@ -268,7 +269,7 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
                 </FormControl>
               </Grid>
               
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <FormControl fullWidth size="small">
                   <InputLabel id="rarity-filter-label">Rarity</InputLabel>
                   <Select
@@ -285,22 +286,7 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
                 </FormControl>
               </Grid>
               
-              <Grid item xs={4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="status-filter-label">Status</InputLabel>
-                  <Select
-                    labelId="status-filter-label"
-                    value={statusFilter}
-                    label="Status"
-                    onChange={handleStatusChange}
-                  >
-                    <MenuItem value="all">All</MenuItem>
-                    <MenuItem value="unlocked">Unlocked</MenuItem>
-                    <MenuItem value="in_progress">In Progress</MenuItem>
-                    <MenuItem value="locked">Locked</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
+
             </Grid>
           </Grid>
         </Grid>
@@ -391,13 +377,20 @@ const AchievementsList: React.FC<AchievementsListProps> = ({ achievements, onCla
                   
                   <Button
                     variant="contained"
-                    color={achievement.isUnlocked ? "success" : "primary"}
-                    startIcon={achievement.isUnlocked ? <LockOpenIcon /> : <LockIcon />}
-                    disabled={!achievement.isUnlocked}
+                    color={achievement.isClaimed ? "default" : achievement.isUnlocked ? "success" : "primary"}
+                    startIcon={achievement.isClaimed ? <LockOpenIcon /> : achievement.isUnlocked ? <LockOpenIcon /> : <LockIcon />}
+                    disabled={!achievement.isUnlocked || achievement.isClaimed}
                     onClick={() => onClaimAchievement(achievement.id)}
                     fullWidth
+                    sx={{
+                      bgcolor: achievement.isClaimed ? 'grey.500' : undefined,
+                      '&.Mui-disabled': {
+                        bgcolor: achievement.isClaimed ? 'grey.500' : undefined,
+                        color: achievement.isClaimed ? 'white' : undefined
+                      }
+                    }}
                   >
-                    {achievement.isUnlocked ? 'Claim Reward' : 'Locked'}
+                    {achievement.isClaimed ? 'Claimed' : achievement.isUnlocked ? 'Claim Reward' : 'Locked'}
                   </Button>
                 </CardContent>
               </AchievementCard>

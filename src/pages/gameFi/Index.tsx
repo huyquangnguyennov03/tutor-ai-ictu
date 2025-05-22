@@ -166,9 +166,40 @@ const GameFi: React.FC = () => {
 
   // Handle claiming an achievement
   const handleClaimAchievement = (achievementId: string) => {
-    showNotification('Achievement claimed successfully!');
-    // In a real application, this would update the achievement status in the backend
-    console.log('Claiming achievement:', achievementId);
+    // Find the achievement
+    const achievement = achievements.find(a => a.id === achievementId);
+    
+    if (achievement && achievement.isUnlocked && !achievement.isClaimed) {
+      // Mark the achievement as claimed
+      setAchievements(prevAchievements => 
+        prevAchievements.map(a => 
+          a.id === achievementId ? { ...a, isClaimed: true } : a
+        )
+      );
+      
+      // Add the badge to the user profile
+      if (userProfile) {
+        // Check if badge already exists to avoid duplicates
+        const badgeExists = userProfile.badges.some(badge => badge.name === achievement.name);
+        
+        if (!badgeExists) {
+          const newBadge = {
+            id: achievement.id,
+            name: achievement.name,
+            imageUrl: achievement.imageUrl
+          };
+          
+          setUserProfile({
+            ...userProfile,
+            badges: [...userProfile.badges, newBadge]
+          });
+        }
+      }
+      
+      showNotification('Achievement claimed successfully! Badge added to your profile.');
+    } else {
+      showNotification('This achievement cannot be claimed.', 'error');
+    }
   };
 
   // Handle starting a daily challenge
