@@ -2,12 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import axios from 'axios';
-import { API_ENDPOINTS } from '@/common/constants/apis';
-import { 
-  fetchMockAssignments, 
-  fetchMockAssignmentDetail, 
-  submitMockAssignment 
-} from '@/mockData/mockAssignments';
+import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
 
 // Define types
 export interface Material {
@@ -54,14 +49,21 @@ export const fetchAssignments = createAsyncThunk(
   'assignments/fetchAssignments',
   async (_, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchMockAssignments();
+      // Sử dụng API thực tế
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS}`);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const response = await axios.get(API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS);
-      // const data = response.data;
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const assignments = response.data.map((item: any) => ({
+        id: item.assignmentid.toString(),
+        title: item.name,
+        course: item.courseid.toString(),
+        chapter: '',  // Cần bổ sung thông tin này từ API nếu có
+        deadline: item.deadline,
+        score: 0,
+        isCompleted: item.status === 'HOÀN THÀNH'
+      }));
       
-      return data;
+      return assignments;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -73,21 +75,31 @@ export const fetchAssignments = createAsyncThunk(
 
 export const fetchAssignmentDetail = createAsyncThunk(
   'assignments/fetchAssignmentDetail',
-  async (id: string, { rejectWithValue, getState }) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchMockAssignmentDetail(id);
-      
-      // Trong môi trường production, sử dụng API thực tế:
-      // const url = API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_DETAILS.replace(':id', id);
-      // const response = await axios.get(url);
-      // const data = response.data;
+      // Sử dụng API thực tế
+      const url = `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_DETAILS.replace(':id', id)}`;
+      const response = await axios.get(url);
+      const data = response.data;
       
       if (!data) {
         throw new Error('Không tìm thấy bài tập');
       }
       
-      return data;
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const assignment: Assignment = {
+        id: data.assignmentid.toString(),
+        title: data.name,
+        description: data.description || '',
+        course: data.courseid.toString(),
+        chapter: data.chapter || '',
+        deadline: data.deadline,
+        score: data.score || 0,
+        materials: data.materials || [],
+        isCompleted: data.status === 'HOÀN THÀNH'
+      };
+      
+      return assignment;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -101,19 +113,19 @@ export const submitAssignment = createAsyncThunk(
   'assignments/submitAssignment',
   async ({ id, formData }: SubmissionData, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const result = await submitMockAssignment(id, formData);
+      // Sử dụng API thực tế
+      const url = `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.SUBMIT_ASSIGNMENT.replace(':id', id)}`;
+      const response = await axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const url = API_ENDPOINTS.ASSIGNMENTS.SUBMIT_ASSIGNMENT.replace(':id', id);
-      // const response = await axios.post(url, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // });
-      // const result = response.data;
-      
-      return result;
+      // Trả về kết quả từ API
+      return {
+        id,
+        ...response.data
+      };
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);

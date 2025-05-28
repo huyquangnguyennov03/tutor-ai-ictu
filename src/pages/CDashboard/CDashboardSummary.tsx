@@ -69,7 +69,7 @@ const CDashboardSummary = () => {
                 {classInfo.averageScore.toFixed(1)}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Trên thang điểm 10
+                Trên thang điểm 4
               </Typography>
             </StatsCard>
           </Grid>

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { API_ENDPOINTS } from '@/common/constants/apis';
+import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
 
 // Định nghĩa các interface
 export interface ChapterData {
@@ -68,28 +68,83 @@ export const fetchStudentProgress = createAsyncThunk(
   'studentProgress/fetchStudentProgress',
   async (studentId: string, { rejectWithValue }) => {
     try {
-      // Sử dụng endpoint từ file cấu hình API
-      const url = API_ENDPOINTS.LEARNING_PROCESS.GET_STUDENT_PROGRESS.replace(':id', studentId);
+      // Lấy thông tin sinh viên
+      const studentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+      const student = studentsResponse.data.find((s: any) => s.studentid.toString() === studentId || s.mssv === studentId);
       
-      // Trong môi trường phát triển, vẫn sử dụng mock API
-      const response = await axios.get('https://run.mocky.io/v3/6944656a-f738-4f43-9897-420ed18e2706');
-
-      // Không lấy studentId từ localStorage, luôn sử dụng studentId được truyền vào
-      // Cần đảm bảo studentId đúng định dạng như trong data API
-      // Ví dụ: Chuyển '20170001' thành '21520001' nếu cần
-      const formattedStudentId = studentId.startsWith('21520')
-        ? studentId // Nếu đã đúng định dạng thì giữ nguyên
-        : `21520${studentId.substring(studentId.length - 3)}`; // Nếu không, chuyển đổi
-
-      console.log(`Looking for student with ID: ${formattedStudentId}`);
-
-      // Giả lập việc lọc dữ liệu theo studentId từ phản hồi API
-      if (response.data && response.data[formattedStudentId]) {
-        return response.data[formattedStudentId];
-      } else {
-        console.error(`Student with ID ${formattedStudentId} not found in data:`, Object.keys(response.data));
+      if (!student) {
         return rejectWithValue(`Không tìm thấy thông tin sinh viên với MSSV: ${studentId}`);
       }
+      
+      // Lấy tiến độ học tập của sinh viên
+      const progressUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENT_PROGRESS.replace(':studentid', student.studentid.toString())}`;
+      const progressResponse = await axios.get(progressUrl);
+      
+      // Lấy báo cáo chi tiết của sinh viên
+      const reportUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENT_REPORT.replace(':studentid', student.studentid.toString())}`;
+      const reportResponse = await axios.get(reportUrl);
+      
+      // Lấy dự đoán và đề xuất can thiệp
+      const predictionUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.PREDICT_INTERVENTION.replace(':studentid', student.studentid.toString())}`;
+      const predictionResponse = await axios.get(predictionUrl);
+      
+      // Lấy chi tiết các chương học (giả định courseid = 1)
+      const chaptersUrl = `${API_BASE_URL}${API_ENDPOINTS.CHAPTERS.GET_CHAPTER_DETAILS
+        .replace(':studentid', student.studentid.toString())
+        .replace(':courseid', '1')}`;
+      const chaptersResponse = await axios.get(chaptersUrl);
+      
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const studentInfo: StudentInfo = {
+        name: student.name,
+        studentId: student.mssv,
+        courseLevel: 'Trung cấp', // Giả định
+        updateDate: progressResponse.data[0]?.lastupdated || new Date().toISOString().split('T')[0]
+      };
+      
+      const chapters: ChapterData[] = chaptersResponse.data.chapters.map((chapter: any, index: number) => ({
+        id: chapter.chapterid,
+        title: chapter.name,
+        progress: chapter.completion_rate,
+        quizScore: `${chapter.average_score}/10`,
+        exercisesCompleted: `${Math.floor(chapter.completion_rate / 10)}/${Math.floor(chapter.completion_rate / 10) + 2}`
+      }));
+      
+      // Tạo dữ liệu lỗi từ báo cáo
+      const errors: ErrorData[] = reportResponse.data.bloom_assessments.map((assessment: any, index: number) => ({
+        name: `Lỗi ${assessment.bloomlevel}`,
+        count: Math.floor(Math.random() * 10) + 1, // Giả định
+        percentage: Math.floor(Math.random() * 30) + 10 // Giả định
+      }));
+      
+      // Tạo đề xuất từ dự đoán
+      const suggestions: Suggestion[] = [
+        {
+          id: 1,
+          title: 'Đề xuất học tập',
+          content: predictionResponse.data.recommendation,
+          type: predictionResponse.data.risk_level === 'An toàn' ? 'success' : 
+                predictionResponse.data.risk_level === 'Cần cải thiện' ? 'warning' : 'error'
+        }
+      ];
+      
+      // Tạo thống kê tổng hợp
+      const summaryStats: SummaryStatsData = {
+        totalLearningTime: `${Math.floor(Math.random() * 100) + 20} giờ`, // Giả định
+        successfulCompilations: Math.floor(Math.random() * 100) + 50, // Giả định
+        failedCompilations: Math.floor(Math.random() * 30) + 10, // Giả định
+        successRate: `${progressResponse.data[0]?.completionrate || 75}%`,
+        dailyAverageTime: `${Math.floor(Math.random() * 3) + 1} giờ`, // Giả định
+        mostCommonError: errors[0]?.name
+      };
+      
+      return {
+        studentInfo,
+        chapters,
+        summaryStats,
+        errors,
+        suggestions
+      };
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Đã xảy ra lỗi khi tải dữ liệu';
       return rejectWithValue(errorMessage);

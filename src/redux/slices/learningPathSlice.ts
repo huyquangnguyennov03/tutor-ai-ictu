@@ -1,16 +1,31 @@
 // src/redux/slices/learningPathSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import { API_ENDPOINTS } from '@/common/constants/apis';
-import { 
-  Course, 
-  fetchAllCourses, 
-  fetchInProgressCourses, 
-  fetchRecommendedCourses, 
-  fetchCourseDetails,
-  updateCourseProgress,
-  enrollCourse
-} from '@/mockData/mockLearningPath';
+import axios from 'axios';
+import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
+
+// Define Course interface
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  instructor: string;
+  duration: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  totalModules: number;
+  completedModules: number;
+  isEnrolled: boolean;
+  rating: number;
+  tags: string[];
+  modules?: {
+    id: string;
+    title: string;
+    duration: string;
+    isCompleted: boolean;
+    content?: string;
+  }[];
+}
 
 // Define state interface
 interface LearningPathState {
@@ -39,14 +54,26 @@ export const fetchAllCoursesAsync = createAsyncThunk(
   'learningPath/fetchAllCourses',
   async (_, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchAllCourses();
+      // Sử dụng API thực tế
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const response = await axios.get(API_ENDPOINTS.LEARNING_PATH.GET_ALL_COURSES);
-      // const data = response.data;
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const courses: Course[] = response.data.map((course: any) => ({
+        id: course.courseid.toString(),
+        title: course.name || 'Khóa học không tên',
+        description: 'Mô tả khóa học sẽ được cập nhật sau',
+        thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
+        instructor: 'Giảng viên',
+        duration: '8 tuần',
+        level: 'intermediate',
+        totalModules: 10,
+        completedModules: Math.floor(course.completionrate / 10) || 0,
+        isEnrolled: true,
+        rating: 4.5,
+        tags: ['programming', 'beginner']
+      }));
       
-      return data;
+      return courses;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -60,14 +87,28 @@ export const fetchInProgressCoursesAsync = createAsyncThunk(
   'learningPath/fetchInProgressCourses',
   async (_, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchInProgressCourses();
+      // Sử dụng API thực tế
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const response = await axios.get(API_ENDPOINTS.LEARNING_PATH.GET_IN_PROGRESS_COURSES);
-      // const data = response.data;
+      // Lọc các khóa học đang học (giả định: completionrate < 100%)
+      const inProgressCourses: Course[] = response.data
+        .filter((course: any) => course.completionrate < 100)
+        .map((course: any) => ({
+          id: course.courseid.toString(),
+          title: course.name || 'Khóa học không tên',
+          description: 'Mô tả khóa học sẽ được cập nhật sau',
+          thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
+          instructor: 'Giảng viên',
+          duration: '8 tuần',
+          level: 'intermediate',
+          totalModules: 10,
+          completedModules: Math.floor(course.completionrate / 10) || 0,
+          isEnrolled: true,
+          rating: 4.5,
+          tags: ['programming', 'beginner']
+        }));
       
-      return data;
+      return inProgressCourses;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -81,14 +122,28 @@ export const fetchRecommendedCoursesAsync = createAsyncThunk(
   'learningPath/fetchRecommendedCourses',
   async (_, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchRecommendedCourses();
+      // Sử dụng API thực tế
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const response = await axios.get(API_ENDPOINTS.LEARNING_PATH.GET_RECOMMENDED_COURSES);
-      // const data = response.data;
+      // Lọc các khóa học được đề xuất (giả định: lấy 3 khóa học đầu tiên)
+      const recommendedCourses: Course[] = response.data
+        .slice(0, 3)
+        .map((course: any) => ({
+          id: course.courseid.toString(),
+          title: course.name || 'Khóa học không tên',
+          description: 'Khóa học được đề xuất dựa trên tiến độ học tập của bạn',
+          thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
+          instructor: 'Giảng viên',
+          duration: '8 tuần',
+          level: 'intermediate',
+          totalModules: 10,
+          completedModules: 0,
+          isEnrolled: false,
+          rating: 4.5,
+          tags: ['programming', 'recommended']
+        }));
       
-      return data;
+      return recommendedCourses;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -102,19 +157,47 @@ export const fetchCourseDetailsAsync = createAsyncThunk(
   'learningPath/fetchCourseDetails',
   async (courseId: string, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const data = await fetchCourseDetails(courseId);
+      // Sử dụng API thực tế
+      const url = `${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSE_DETAILS.replace(':id', courseId)}`;
+      const response = await axios.get(url);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const url = API_ENDPOINTS.LEARNING_PATH.GET_COURSE_DETAILS.replace(':id', courseId);
-      // const response = await axios.get(url);
-      // const data = response.data;
+      // Lấy danh sách chương học của khóa học
+      const chaptersUrl = `${API_BASE_URL}${API_ENDPOINTS.CHAPTERS.GET_CHAPTERS}`;
+      const chaptersResponse = await axios.get(chaptersUrl);
       
-      if (!data) {
+      // Lọc các chương học thuộc khóa học này
+      const courseChapters = chaptersResponse.data.filter((chapter: any) => 
+        chapter.courseid.toString() === courseId
+      );
+      
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const course: Course = {
+        id: response.data.courseid.toString(),
+        title: response.data.name || 'Khóa học không tên',
+        description: 'Mô tả chi tiết khóa học sẽ được cập nhật sau',
+        thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
+        instructor: 'Giảng viên',
+        duration: '8 tuần',
+        level: 'intermediate',
+        totalModules: courseChapters.length,
+        completedModules: Math.floor(response.data.completionrate / 10) || 0,
+        isEnrolled: true,
+        rating: 4.5,
+        tags: ['programming', 'beginner'],
+        modules: courseChapters.map((chapter: any, index: number) => ({
+          id: chapter.chapterid.toString(),
+          title: chapter.name,
+          duration: `${chapter.estimatedtime} giờ`,
+          isCompleted: (chapter.completionrate || 0) >= 100,
+          content: 'Nội dung chi tiết của chương học sẽ được cập nhật sau'
+        }))
+      };
+      
+      if (!course) {
         throw new Error('Không tìm thấy khóa học');
       }
       
-      return data;
+      return course;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -128,15 +211,15 @@ export const updateCourseProgressAsync = createAsyncThunk(
   'learningPath/updateCourseProgress',
   async ({ courseId, moduleId }: { courseId: string; moduleId: string }, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const result = await updateCourseProgress(courseId, moduleId);
+      // Trong thực tế, cần có API endpoint riêng cho chức năng này
+      // Hiện tại, chỉ cập nhật UI mà không gọi API
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const url = API_ENDPOINTS.LEARNING_PATH.UPDATE_COURSE_PROGRESS.replace(':id', courseId);
-      // const response = await axios.post(url, { moduleId });
-      // const result = response.data;
-      
-      return result;
+      // Giả lập kết quả trả về
+      return {
+        courseId,
+        completedModules: 5, // Giả định số module đã hoàn thành
+        message: 'Cập nhật tiến độ thành công'
+      };
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -150,15 +233,15 @@ export const enrollCourseAsync = createAsyncThunk(
   'learningPath/enrollCourse',
   async (courseId: string, { rejectWithValue }) => {
     try {
-      // Trong môi trường phát triển, sử dụng mock data
-      const result = await enrollCourse(courseId);
+      // Sử dụng API thực tế
+      const url = `${API_BASE_URL}${API_ENDPOINTS.COURSES.ENROLL_COURSE.replace(':id', courseId)}`;
+      const response = await axios.post(url);
       
-      // Trong môi trường production, sử dụng API thực tế:
-      // const url = API_ENDPOINTS.LEARNING_PATH.ENROLL_COURSE.replace(':id', courseId);
-      // const response = await axios.post(url);
-      // const result = response.data;
-      
-      return result;
+      // Giả lập kết quả trả về nếu API chưa hoàn thiện
+      return {
+        courseId,
+        message: 'Đăng ký khóa học thành công'
+      };
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);

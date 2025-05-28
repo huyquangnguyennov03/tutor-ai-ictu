@@ -95,7 +95,7 @@ const CDashboardHeader = () => {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs>
             <Typography variant="subtitle1" component="div">
-              Lớp {currentCourse} - {semesterName}
+              {courseName} - {semesterName}
             </Typography>
             {classInfo && (
               <>

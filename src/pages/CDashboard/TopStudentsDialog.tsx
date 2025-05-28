@@ -88,7 +88,7 @@ const TopStudentsDialog: React.FC<TopStudentsDialogProps> = ({ open, onClose, st
                         </Box>
                       </Box>
                     </TableCell>
-                    <TableCell>{student.score.toFixed(1)}/10</TableCell>
+                    <TableCell>{student.score.toFixed(1)}/4</TableCell>
                     <TableCell>
                       <Button variant="outlined" size="small">Chi tiết</Button>
                     </TableCell>

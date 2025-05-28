@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { mockApiService } from '@/services/mockApiService';
-import { API_ENDPOINTS } from '@/common/constants/apis';
+import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
+import { apiService } from '@/services/apiService';
 
 // Types for API responses
 export interface Student {
@@ -132,8 +132,8 @@ const initialState: TeacherDashboardState = {
   classInfo: null,
   courseOptions: [], // Will be populated from API
   semesterOptions: [], // Will be populated from API
-  currentCourse: 'C01',
-  currentSemester: 'SUM2024',
+  currentCourse: '1', // ID khóa học dạng số
+  currentSemester: 'HK1 2024-2025',
   selectedTab: 0,
   status: 'idle',
   error: null,
@@ -147,18 +147,8 @@ export const fetchDashboardData = createAsyncThunk(
   'teacherDashboard/fetchDashboardData',
   async ({ courseId, semesterId }: { courseId: string; semesterId: string }, { rejectWithValue }) => {
     try {
-      // Sử dụng endpoint từ file cấu hình API
-      const url = API_ENDPOINTS.CDASHBOARD.GET_DASHBOARD_DATA
-        .replace(':courseId', courseId)
-        .replace(':semesterId', semesterId);
-      
-      // Trong môi trường phát triển, vẫn sử dụng mock API service
-      const data = await mockApiService.fetchDashboardData(courseId, semesterId);
-      
-      // Trong môi trường production, sẽ sử dụng API thực tế:
-      // const response = await axios.get(url);
-      // const data = response.data;
-      
+      // Sử dụng apiService để lấy dữ liệu
+      const data = await apiService.fetchDashboardData(courseId, semesterId);
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể tải dữ liệu');
@@ -171,17 +161,8 @@ export const fetchAssignmentSubmission = createAsyncThunk(
   'teacherDashboard/fetchAssignmentSubmission',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // Sử dụng endpoint từ file cấu hình API
-      const url = API_ENDPOINTS.CDASHBOARD.GET_ASSIGNMENT_SUBMISSION
-        .replace(':name', assignmentName);
-      
-      // Trong môi trường phát triển, vẫn sử dụng mock API service
-      const data = await mockApiService.fetchAssignmentSubmission(assignmentName);
-      
-      // Trong môi trường production, sẽ sử dụng API thực tế:
-      // const response = await axios.get(url);
-      // const data = response.data;
-      
+      // Sử dụng apiService để lấy dữ liệu
+      const data = await apiService.fetchAssignmentSubmission(assignmentName);
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể tải dữ liệu bài tập');
@@ -194,16 +175,8 @@ export const sendReminder = createAsyncThunk(
   'teacherDashboard/sendReminder',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // Sử dụng endpoint từ file cấu hình API
-      const url = API_ENDPOINTS.CDASHBOARD.SEND_REMINDER
-        .replace(':name', assignmentName);
-      
-      // Trong môi trường phát triển, vẫn sử dụng mock API service
-      const response = await mockApiService.sendReminder(assignmentName);
-      
-      // Trong môi trường production, sẽ sử dụng API thực tế:
-      // const response = await axios.post(url);
-      
+      // Sử dụng apiService để gửi nhắc nhở
+      const result = await apiService.sendReminder(assignmentName);
       return { success: true, assignmentName };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể gửi nhắc nhở');
@@ -216,8 +189,8 @@ export const sendReminderToStudent = createAsyncThunk(
   'teacherDashboard/sendReminderToStudent',
   async ({ assignmentName, mssv }: { assignmentName: string; mssv: string }, { rejectWithValue }) => {
     try {
-      // Use mock API service
-      const response = await mockApiService.sendReminderToStudent(assignmentName, mssv);
+      // Sử dụng apiService để gửi nhắc nhở cho sinh viên cụ thể
+      const result = await apiService.sendReminderToStudent(assignmentName, mssv);
       return { success: true, assignmentName, mssv };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể gửi nhắc nhở cho sinh viên');
@@ -230,8 +203,8 @@ export const extendDeadline = createAsyncThunk(
   'teacherDashboard/extendDeadline',
   async (assignmentName: string, { rejectWithValue }) => {
     try {
-      // Use mock API service
-      const response = await mockApiService.extendDeadline(assignmentName);
+      // Sử dụng apiService để gia hạn deadline
+      const result = await apiService.extendDeadline(assignmentName);
       return { success: true, assignmentName };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể gia hạn deadline');

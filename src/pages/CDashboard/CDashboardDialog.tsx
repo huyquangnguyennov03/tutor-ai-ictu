@@ -123,7 +123,7 @@ const CDashboardDialog: React.FC<CDashboardDialogProps> = ({ open, onClose }) =>
             >
               {courseOptions.map((course) => (
                 <MenuItem key={course.id} value={course.id}>
-                  {course.name}
+                  {course.fullName}
                 </MenuItem>
               ))}
             </Select>

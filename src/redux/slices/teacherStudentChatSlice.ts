@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
 
 // Define types
 export interface Message {
@@ -43,56 +45,115 @@ const initialState: ChatState = {
 // Async thunks
 export const fetchStudents = createAsyncThunk(
   'teacherStudentChat/fetchStudents',
-  async (classId: string) => {
-    // In a real app, this would be an API call
-    const students: Student[] = [
-      { id: '1', name: 'Nguyễn Văn A', studentId: '22520001', isOnline: true, hasUnread: false, status: 'online' },
-      { id: '2', name: 'Trần Thị B', studentId: '22520002', isOnline: false, hasUnread: true, status: 'away' },
-      { id: '3', name: 'Lê Văn C', studentId: '22520003', isOnline: false, hasUnread: false, status: 'excellent' }
-    ];
-    return students;
+  async (classId: string, { rejectWithValue }) => {
+    try {
+      // Sử dụng API thực tế để lấy danh sách sinh viên
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+      
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const students: Student[] = response.data.map((student: any) => ({
+        id: student.studentid.toString(),
+        name: student.name,
+        studentId: student.mssv,
+        isOnline: Math.random() > 0.5, // Giả định trạng thái online
+        hasUnread: false,
+        lastActivity: new Date().toISOString(),
+        status: student.totalgpa > 3.5 ? 'excellent' : 
+                Math.random() > 0.5 ? 'online' : 'offline'
+      }));
+      
+      return students;
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Không thể tải danh sách sinh viên');
+    }
   }
 );
 
 export const fetchMessages = createAsyncThunk(
   'teacherStudentChat/fetchMessages',
-  async (studentId: string) => {
-    // In a real app, this would be an API call
-    const messages: Message[] = [
-      {
-        id: '1',
-        senderId: '1',
-        senderType: 'student',
-        senderName: 'Nguyễn Văn A',
-        content: 'Thầy ơi, em có vấn đề với bài tập Lab 4. Em không hiểu tại sao code của em bị segmentation fault khi chạy.',
-        timestamp: '2024-07-21T14:30:00'
-      },
-      {
-        id: '2',
-        senderId: 'teacher',
-        senderType: 'teacher',
-        senderName: 'Giáo viên',
-        content: 'Chào bạn, bạn hãy gửi đoạn code của mình để tôi xem nhé.',
-        timestamp: '2024-07-21T14:35:00'
+  async (studentId: string, { rejectWithValue }) => {
+    try {
+      // Trong thực tế, cần có API endpoint riêng cho chức năng này
+      // Hiện tại, tạo dữ liệu mẫu
+      
+      // Lấy thông tin sinh viên
+      const studentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+      const student = studentsResponse.data.find((s: any) => s.studentid.toString() === studentId);
+      
+      if (!student) {
+        throw new Error('Không tìm thấy sinh viên');
       }
-    ];
-    return { studentId, messages };
+      
+      // Tạo tin nhắn mẫu
+      const messages: Message[] = [
+        {
+          id: '1',
+          senderId: studentId,
+          senderType: 'student',
+          senderName: student.name,
+          content: 'Thầy ơi, em có vấn đề với bài tập Lab 4. Em không hiểu tại sao code của em bị segmentation fault khi chạy.',
+          timestamp: new Date(Date.now() - 3600000).toISOString() // 1 giờ trước
+        },
+        {
+          id: '2',
+          senderId: 'teacher',
+          senderType: 'teacher',
+          senderName: 'Giáo viên',
+          content: 'Chào bạn, bạn hãy gửi đoạn code của mình để tôi xem nhé.',
+          timestamp: new Date(Date.now() - 3300000).toISOString() // 55 phút trước
+        }
+      ];
+      
+      return { studentId, messages };
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Không thể tải tin nhắn');
+    }
   }
 );
 
 export const sendMessage = createAsyncThunk(
   'teacherStudentChat/sendMessage',
-  async ({ studentId, content, senderType }: { studentId: string; content: string; senderType: 'teacher' | 'student' }) => {
-    // In a real app, this would be an API call
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: senderType === 'teacher' ? 'teacher' : studentId,
-      senderType,
-      senderName: senderType === 'teacher' ? 'Giáo viên' : 'Nguyễn Văn A',
-      content,
-      timestamp: new Date().toISOString()
-    };
-    return { studentId, message: newMessage };
+  async ({ studentId, content, senderType }: { studentId: string; content: string; senderType: 'teacher' | 'student' }, { rejectWithValue }) => {
+    try {
+      // Sử dụng API thực tế để gửi tin nhắn
+      const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.CHAT.SEND_MESSAGE}`, {
+        senderid: senderType === 'teacher' ? 1 : parseInt(studentId), // ID của người gửi
+        receiverid: senderType === 'teacher' ? parseInt(studentId) : 1, // ID của người nhận
+        message: content
+      });
+      
+      // Lấy thông tin sinh viên nếu cần
+      let senderName = senderType === 'teacher' ? 'Giáo viên' : '';
+      
+      if (senderType === 'student') {
+        const studentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+        const student = studentsResponse.data.find((s: any) => s.studentid.toString() === studentId);
+        senderName = student ? student.name : 'Sinh viên';
+      }
+      
+      // Tạo đối tượng tin nhắn mới
+      const newMessage: Message = {
+        id: response.data.chatid.toString() || Date.now().toString(),
+        senderId: senderType === 'teacher' ? 'teacher' : studentId,
+        senderType,
+        senderName,
+        content,
+        timestamp: new Date().toISOString()
+      };
+      
+      return { studentId, message: newMessage };
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Không thể gửi tin nhắn');
+    }
   }
 );
 

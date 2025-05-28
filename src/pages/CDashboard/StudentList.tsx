@@ -158,7 +158,7 @@ const StudentList: React.FC = () => {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell>{student.score}/10</TableCell>
+                <TableCell>{student.score}/4</TableCell>
                 <TableCell>
                   <Typography
                     sx={{
