@@ -26,6 +26,10 @@ export interface StudentSubmission {
 
 export interface AssignmentSubmission {
   name: string;
+  deadline: string;
+  totalStudents: number;
+  submittedCount: number;
+  notSubmittedCount: number;
   studentsSubmitted: StudentSubmission[];
   studentsNotSubmitted: StudentSubmission[];
 }
@@ -71,6 +75,30 @@ export interface TopStudent {
   progress: number;
 }
 
+export interface StudentNeedingSupport {
+  mssv: string;
+  name: string;
+  score: number;
+  progress: number;
+  issue: string;
+}
+
+export interface StudentNeedingSupport {
+  mssv: string;
+  name: string;
+  score: number;
+  progress: number;
+  issue: string;
+}
+
+export interface StudentNeedingSupport {
+  mssv: string;
+  name: string;
+  score: number;
+  progress: number;
+  issue: string;
+}
+
 export interface ClassInfo {
   id: string;
   name: string;
@@ -101,6 +129,15 @@ export interface SemesterOption {
 }
 
 // Main state interface
+// Interface for students needing support
+export interface StudentNeedingSupport {
+  mssv: string;
+  name: string;
+  score: number;
+  progress: number;
+  issue: string;
+}
+
 export interface TeacherDashboardState {
   students: Student[];
   chapters: Chapter[];
@@ -108,6 +145,7 @@ export interface TeacherDashboardState {
   assignments: Assignment[];
   warnings: StudentWarning[];
   topStudents: TopStudent[];
+  studentsNeedingSupport: StudentNeedingSupport[];
   classInfo: ClassInfo | null;
   courseOptions: CourseOption[];
   semesterOptions: SemesterOption[];
@@ -116,7 +154,7 @@ export interface TeacherDashboardState {
   selectedTab: number;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
-  // Thêm state mới cho danh sách nộp bài tập
+  activityRate: number | null;
   currentAssignmentSubmission: AssignmentSubmission | null;
   assignmentSubmissionStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
@@ -129,6 +167,7 @@ const initialState: TeacherDashboardState = {
   assignments: [],
   warnings: [],
   topStudents: [],
+  studentsNeedingSupport: [],
   classInfo: null,
   courseOptions: [], // Will be populated from API
   semesterOptions: [], // Will be populated from API
@@ -137,7 +176,7 @@ const initialState: TeacherDashboardState = {
   selectedTab: 0,
   status: 'idle',
   error: null,
-  // Khởi tạo state mới
+  activityRate: null,
   currentAssignmentSubmission: null,
   assignmentSubmissionStatus: 'idle'
 };
@@ -212,6 +251,20 @@ export const extendDeadline = createAsyncThunk(
   }
 );
 
+export const fetchActivityRate = createAsyncThunk(
+  'teacherDashboard/fetchActivityRate',
+  async (courseId: string, { rejectWithValue }) => {
+    try {
+      const url = `${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_ACTIVITY_RATE.replace(':courseid', courseId)}`;
+      console.log(`Fetching activity rate for courseId: ${courseId}, URL: ${url}`); // Debug log
+      const response = await axios.get(url);
+      return response.data.activity_rate;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Không thể tải tỷ lệ hoạt động');
+    }
+  }
+);
+
 // Create slice
 const teacherDashboardSlice = createSlice({
   name: 'teacherDashboard',
@@ -260,8 +313,9 @@ const teacherDashboardSlice = createSlice({
         state.assignments = action.payload.assignments;
         state.warnings = action.payload.warnings;
         state.topStudents = action.payload.topStudents;
+        state.studentsNeedingSupport = action.payload.studentsNeedingSupport;
         state.classInfo = action.payload.classInfo;
-        
+
         // Update course and semester options if provided
         if (action.payload.courseOptions) {
           state.courseOptions = action.payload.courseOptions;
@@ -305,6 +359,17 @@ const teacherDashboardSlice = createSlice({
           state.assignments[assignmentIndex].deadline = newDeadline;
           state.assignments[assignmentIndex].status = 'sắp tới';
         }
+      })
+      .addCase(fetchActivityRate.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchActivityRate.fulfilled, (state, action: PayloadAction<number>) => {
+        state.status = 'succeeded';
+        state.activityRate = action.payload;
+      })
+      .addCase(fetchActivityRate.rejected, (state, action: PayloadAction<any>) => {
+        state.status = 'failed';
+        state.error = action.payload || 'Không thể tải tỷ lệ hoạt động';
       });
   },
   selectors: {
@@ -314,6 +379,7 @@ const teacherDashboardSlice = createSlice({
     selectAssignments: (state) => state.assignments,
     selectWarnings: (state) => state.warnings,
     selectTopStudents: (state) => state.topStudents,
+    selectStudentsNeedingSupport: (state) => state.studentsNeedingSupport,
     selectClassInfo: (state) => state.classInfo,
     selectCourseOptions: (state) => state.courseOptions,
     selectSemesterOptions: (state) => state.semesterOptions,
@@ -322,7 +388,7 @@ const teacherDashboardSlice = createSlice({
     selectSelectedTab: (state) => state.selectedTab,
     selectStatus: (state) => state.status,
     selectError: (state) => state.error,
-    // Thêm selectors mới
+    selectActivityRate: (state) => state.activityRate,
     selectCurrentAssignmentSubmission: (state) => state.currentAssignmentSubmission,
     selectAssignmentSubmissionStatus: (state) => state.assignmentSubmissionStatus
   }
@@ -346,6 +412,7 @@ export const {
   selectAssignments,
   selectWarnings,
   selectTopStudents,
+  selectStudentsNeedingSupport,
   selectClassInfo,
   selectCourseOptions,
   selectSemesterOptions,
@@ -354,7 +421,7 @@ export const {
   selectSelectedTab,
   selectStatus,
   selectError,
-  // Export selectors mới
+  selectActivityRate,
   selectCurrentAssignmentSubmission,
   selectAssignmentSubmissionStatus
 } = teacherDashboardSlice.selectors;

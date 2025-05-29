@@ -122,6 +122,17 @@ export const apiService = {
           score: student.score,
           progress: student.progress
         }));
+        
+      // Lấy danh sách sinh viên cần hỗ trợ (điểm < 2)
+      const studentsNeedingSupport = [...students]
+        .filter(student => student.score < 2)
+        .map(student => ({
+          mssv: student.mssv,
+          name: student.name,
+          score: student.score,
+          progress: student.progress,
+          issue: "Điểm trung bình thấp, cần hỗ trợ học tập"
+        }));
 
       // Lấy tiến độ lớp học với numericCourseId
       const classProgressResponse = await axios.get(
@@ -149,6 +160,7 @@ export const apiService = {
         assignments,
         warnings,
         topStudents,
+        studentsNeedingSupport,
         classInfo,
         courseOptions,
         semesterOptions
@@ -162,7 +174,7 @@ export const apiService = {
   // Fetch assignment submission data
   fetchAssignmentSubmission: async (assignmentName: string) => {
     try {
-      const studentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+      // Tìm ID của bài tập từ tên
       const assignmentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS}`);
       const assignment = assignmentsResponse.data.find((a: any) => a.name === assignmentName);
 
@@ -170,22 +182,42 @@ export const apiService = {
         throw new Error('Không tìm thấy bài tập');
       }
 
-      const [submitted, total] = assignment.submitted.split('/').map(Number);
-      const allStudents = studentsResponse.data.map((student: any) => ({
+      // Sử dụng endpoint mới để lấy trạng thái nộp bài
+      const assignmentId = assignment.id || 1; // Fallback to 1 if id is not available
+      const statusResponse = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_STATUS.replace(':assignmentid', assignmentId.toString())}`
+      );
+
+      const data = statusResponse.data;
+      
+      // Chuyển đổi dữ liệu từ API sang định dạng cần thiết
+      const studentsSubmitted = data.submitted_students.map((student: any) => ({
         mssv: student.mssv,
         name: student.name,
-        progress: 0,
-        score: student.totalgpa.toString(),
-        status: student.totalgpa > 3.5 ? 'ĐẠT CHỈ TIÊU' : student.totalgpa > 3.0 ? 'KHÁ' : student.totalgpa > 2.0 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
+        progress: student.progress,
+        score: student.current_score ? student.current_score.toString() : 'N/A',
+        status: student.current_score > 8.5 ? 'ĐẠT CHỈ TIÊU' : 
+                student.current_score > 7 ? 'KHÁ' : 
+                student.current_score > 5 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
       }));
 
-      const studentsSubmitted = allStudents.slice(0, submitted);
-      const studentsNotSubmitted = allStudents.slice(submitted, total);
+      const studentsNotSubmitted = data.not_submitted_students.map((student: any) => ({
+        mssv: student.mssv,
+        name: student.name,
+        progress: student.progress,
+        score: student.current_score ? student.current_score.toString() : 'N/A',
+        status: student.progress > 75 ? 'KHÁ' : 
+                student.progress > 50 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
+      }));
 
       return {
-        name: assignmentName,
+        name: data.assignment_name,
+        deadline: data.deadline,
         studentsSubmitted,
-        studentsNotSubmitted
+        studentsNotSubmitted,
+        totalStudents: data.total_students,
+        submittedCount: data.submitted_count,
+        notSubmittedCount: data.not_submitted_count
       };
     } catch (error) {
       console.error('Error fetching assignment submission:', error);

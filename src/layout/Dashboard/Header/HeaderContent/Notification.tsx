@@ -13,6 +13,11 @@ import NotificationBase from './NotificationBase';
 import { useAppSelector } from '@/redux/hooks';
 import { selectRole } from '@/redux/slices/authSlice';
 import { Roles } from '@/common/constants/roles';
+import { 
+  selectWarnings, 
+  selectStudentsNeedingSupport,
+  selectAssignments
+} from '@/redux/slices/teacherDashboardSlice';
 
 // assets
 import BellOutlined from '@ant-design/icons/BellOutlined';
@@ -213,19 +218,123 @@ export default function Notification() {
   const userRole = useAppSelector(selectRole);
   const isTeacher = userRole === Roles.TEACHER;
   
+  // Lấy dữ liệu từ Redux store
+  const studentWarnings = useAppSelector(selectWarnings);
+  const studentsNeedingSupport = useAppSelector(selectStudentsNeedingSupport);
+  const assignments = useAppSelector(selectAssignments);
+  
   // Khởi tạo thông báo dựa trên vai trò
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [read, setRead] = useState<number>(0);
   
-  // Cập nhật thông báo khi vai trò thay đổi
+  // Cập nhật thông báo khi vai trò thay đổi hoặc dữ liệu thay đổi
   useEffect(() => {
-    const roleBasedNotifications = isTeacher ? teacherNotifications : studentNotifications;
-    setNotifications(roleBasedNotifications);
-    
-    // Đếm số thông báo chưa đọc
-    const unreadCount = roleBasedNotifications.filter(item => !item.read).length;
-    setRead(unreadCount);
-  }, [isTeacher]);
+    if (isTeacher) {
+      // Tạo thông báo từ dữ liệu cảnh báo
+      const warningNotifications: NotificationItem[] = [];
+      
+      // Thêm thông báo cho sinh viên cần hỗ trợ (điểm < 2)
+      if (studentsNeedingSupport && studentsNeedingSupport.length > 0) {
+        warningNotifications.push({
+          id: 'support-1',
+          avatar: <WarningOutlined />,
+          avatarColor: { color: 'error.main', bgcolor: 'error.lighter' },
+          title: (
+            <>
+              <Typography component="span" variant="subtitle1">
+                Sinh viên cần hỗ trợ
+              </Typography>
+            </>
+          ),
+          subtitle: `${studentsNeedingSupport.length} sinh viên có điểm dưới 2.0`,
+          time: 'Hôm nay',
+          timestamp: 'Hôm nay',
+          read: false
+        });
+      }
+      
+      // Thêm thông báo cho các cảnh báo khẩn cấp
+      const urgentWarnings = studentWarnings.filter(warning => warning.priority === 'khẩn cấp');
+      if (urgentWarnings.length > 0) {
+        warningNotifications.push({
+          id: 'warning-urgent',
+          avatar: <WarningOutlined />,
+          avatarColor: { color: 'error.main', bgcolor: 'error.lighter' },
+          title: (
+            <>
+              <Typography component="span" variant="subtitle1">
+                Cảnh báo khẩn cấp
+              </Typography>
+            </>
+          ),
+          subtitle: `${urgentWarnings.length} sinh viên có nguy cơ trượt môn`,
+          time: 'Hôm nay',
+          timestamp: 'Hôm nay',
+          read: false
+        });
+      }
+      
+      // Thêm thông báo cho các cảnh báo thông thường
+      const normalWarnings = studentWarnings.filter(warning => warning.priority === 'cảnh báo');
+      if (normalWarnings.length > 0) {
+        warningNotifications.push({
+          id: 'warning-normal',
+          avatar: <WarningOutlined />,
+          avatarColor: { color: 'warning.main', bgcolor: 'warning.lighter' },
+          title: (
+            <>
+              <Typography component="span" variant="subtitle1">
+                Cảnh báo học tập
+              </Typography>
+            </>
+          ),
+          subtitle: `${normalWarnings.length} sinh viên cần chú ý`,
+          time: 'Hôm nay',
+          timestamp: 'Hôm nay',
+          read: false
+        });
+      }
+      
+      // Thêm thông báo cho deadline sắp hết hạn
+      const upcomingAssignments = assignments.filter(a => a.status === 'sắp hết hạn');
+      if (upcomingAssignments.length > 0) {
+        upcomingAssignments.forEach((assignment, index) => {
+          warningNotifications.push({
+            id: `assignment-${index}`,
+            avatar: <FileOutlined />,
+            avatarColor: { color: 'warning.main', bgcolor: 'warning.lighter' },
+            title: (
+              <>
+                <Typography component="span" variant="subtitle1">
+                  {assignment.name}
+                </Typography>{' '}
+                sắp hết hạn
+              </>
+            ),
+            subtitle: `Deadline: ${assignment.deadline}, Đã nộp: ${assignment.completionRate}%`,
+            time: 'Hôm nay',
+            timestamp: 'Hôm nay',
+            read: false
+          });
+        });
+      }
+      
+      // Kết hợp với các thông báo cố định
+      const combinedNotifications = [...warningNotifications, ...teacherNotifications];
+      setNotifications(combinedNotifications);
+      
+      // Đếm số thông báo chưa đọc
+      const unreadCount = combinedNotifications.filter(item => !item.read).length;
+      setRead(unreadCount);
+    } else {
+      // Nếu là học sinh, sử dụng thông báo cố định
+      setNotifications(studentNotifications);
+      
+      // Đếm số thông báo chưa đọc
+      const unreadCount = studentNotifications.filter(item => !item.read).length;
+      setRead(unreadCount);
+    }
+  }, [isTeacher, studentWarnings, studentsNeedingSupport, assignments]);
 
   const handleMarkAllRead = () => {
     setRead(0);

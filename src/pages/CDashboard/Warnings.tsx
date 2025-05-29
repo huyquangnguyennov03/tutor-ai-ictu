@@ -9,6 +9,7 @@ import { AppDispatch } from '@/redux/store'; // Import AppDispatch type
 import {
   selectWarnings,
   selectTopStudents,
+  selectStudentsNeedingSupport,
   selectAssignments,
   sendReminder
 } from '@/redux/slices/teacherDashboardSlice';
@@ -19,6 +20,7 @@ const Warnings = () => {
   // Get data from Redux store instead of using mock data
   const studentWarnings = useSelector(selectWarnings);
   const topStudents = useSelector(selectTopStudents);
+  const studentsNeedingSupport = useSelector(selectStudentsNeedingSupport);
   const assignments = useSelector(selectAssignments);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setSubmissionDialogOpen] = useState(false);
@@ -60,8 +62,8 @@ const Warnings = () => {
     setDialogOpen(true);
   };
 
-  // Handle the case when there are no warnings yet
-  if (studentWarnings.length === 0) {
+  // Handle the case when there are no warnings yet and no students needing support
+  if (studentsNeedingSupport.length === 0 && !upcomingAssignment && topStudents.length === 0) {
     return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
@@ -78,195 +80,82 @@ const Warnings = () => {
         Cảnh báo & Nhắc nhở
       </Typography>
 
-      {/* Students needing assistance */}
+      {/* Students needing assistance - Students with score < 2 */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
           Sinh viên cần hỗ trợ
         </Typography>
 
-        {/* Urgent warnings - high priority students */}
-        {studentWarnings.filter(warning => warning.priority === 'khẩn cấp').map((warning) => (
-          <Box key={warning.mssv} sx={{
-            mb: 2,
-            p: 3,
-            borderRadius: '8px',
-            backgroundColor: '#ffebee',
-            borderLeft: '4px solid #f44336',
-            position: 'relative'
-          }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              backgroundColor: '#f44336',
-              color: 'white',
-              borderRadius: '20px',
-              px: 2,
-              py: 0.5,
-              fontSize: '0.75rem',
-              fontWeight: 'bold'
+        {studentsNeedingSupport.length > 0 ? (
+          studentsNeedingSupport.map((student) => (
+            <Box key={student.mssv} sx={{
+              mb: 2,
+              p: 3,
+              borderRadius: '8px',
+              backgroundColor: '#ffebee',
+              borderLeft: '4px solid #f44336',
+              position: 'relative'
             }}>
-              Khẩn cấp
+              <Box sx={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                backgroundColor: '#f44336',
+                color: 'white',
+                borderRadius: '20px',
+                px: 2,
+                py: 0.5,
+                fontSize: '0.75rem',
+                fontWeight: 'bold'
+              }}>
+                Khẩn cấp
+              </Box>
+
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                {student.name} ({student.mssv}) - Điểm dưới 2.0
+              </Typography>
+
+              <Typography variant="body1" sx={{ mb: 0.5 }}>
+                Điểm trung bình: {student.score}/10
+              </Typography>
+
+              <Typography variant="body1" sx={{ mb: 0.5 }}>
+                Tiến độ hoàn thành: {student.progress}%
+              </Typography>
+
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Vấn đề: {student.issue}
+              </Typography>
+
+              <Box>
+                <Button
+                  variant="contained"
+                  sx={{
+                    mr: 1,
+                    backgroundColor: '#5c8ed0',
+                    '&:hover': { backgroundColor: '#4577bb' },
+                    borderRadius: '4px'
+                  }}
+                  onClick={() => handleViewDetails(student.mssv)}
+                >
+                  Xem chi tiết
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: '#ff9800',
+                    '&:hover': { backgroundColor: '#ed8c00' },
+                    borderRadius: '4px'
+                  }}
+                  onClick={() => handleContactStudent(student.mssv, 'khẩn cấp')}
+                >
+                  Liên hệ ngay
+                </Button>
+              </Box>
             </Box>
-
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-              {warning.name} ({warning.mssv}) - Nguy cơ trượt môn
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 0.5 }}>
-              Điểm trung bình: {warning.score}/10
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 0.5 }}>
-              Tiến độ hoàn thành: {warning.progress}%
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Vấn đề: {warning.issue.split('Vấn đề: ')[1] || warning.issue}
-            </Typography>
-
-            <Box>
-              <Button
-                variant="contained"
-                sx={{
-                  mr: 1,
-                  backgroundColor: '#5c8ed0',
-                  '&:hover': { backgroundColor: '#4577bb' },
-                  borderRadius: '4px'
-                }}
-                onClick={() => handleViewDetails(warning.mssv)}
-              >
-                Xem chi tiết
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: '#ff9800',
-                  '&:hover': { backgroundColor: '#ed8c00' },
-                  borderRadius: '4px'
-                }}
-                onClick={() => handleContactStudent(warning.mssv, 'khẩn cấp')}
-              >
-                Liên hệ ngay
-              </Button>
-            </Box>
-          </Box>
-        ))}
-
-        {/* Warning - medium priority students */}
-        {studentWarnings.filter(warning => warning.priority === 'cảnh báo').map((warning) => (
-          <Box key={warning.mssv} sx={{
-            mb: 2,
-            p: 3,
-            borderRadius: '8px',
-            backgroundColor: '#fff8e1',
-            borderLeft: '4px solid #ffb300',
-            position: 'relative'
-          }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              backgroundColor: '#ff9800',
-              color: 'white',
-              borderRadius: '20px',
-              px: 2,
-              py: 0.5,
-              fontSize: '0.75rem',
-              fontWeight: 'bold'
-            }}>
-              Cần chú ý
-            </Box>
-
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-              {warning.name} ({warning.mssv}) - Tiến độ chậm
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 0.5 }}>
-              Điểm trung bình: {warning.score}/10
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 0.5 }}>
-              Tiến độ hoàn thành: {warning.progress}%
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Vấn đề: {warning.issue.split('Vấn đề: ')[1] || warning.issue}
-            </Typography>
-
-            <Box>
-              <Button
-                variant="contained"
-                sx={{
-                  mr: 1,
-                  backgroundColor: '#5c8ed0',
-                  '&:hover': { backgroundColor: '#4577bb' },
-                  borderRadius: '4px'
-                }}
-                onClick={() => handleViewDetails(warning.mssv)}
-              >
-                Xem chi tiết
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: '#5c8ed0',
-                  '&:hover': { backgroundColor: '#4577bb' },
-                  borderRadius: '4px'
-                }}
-                onClick={() => handleContactStudent(warning.mssv, 'cảnh báo')}
-              >
-                Liên hệ
-              </Button>
-            </Box>
-          </Box>
-        ))}
-
-        {/* Info - more students need assistance (if there are more than what we're showing) */}
-        {studentWarnings.filter(warning => warning.priority === 'thông tin').length > 0 && (
-          <Box sx={{
-            mb: 2,
-            p: 3,
-            borderRadius: '8px',
-            backgroundColor: '#e8f5e9',
-            borderLeft: '4px solid #43a047',
-            position: 'relative'
-          }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              backgroundColor: '#5c8ed0',
-              color: 'white',
-              borderRadius: '20px',
-              px: 2,
-              py: 0.5,
-              fontSize: '0.75rem',
-              fontWeight: 'bold'
-            }}>
-              Thông tin
-            </Box>
-
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-              {studentWarnings.filter(warning => warning.priority === 'thông tin').length} sinh viên khác cần hỗ trợ
-            </Typography>
-
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Các sinh viên có điểm dưới mức trung bình hoặc tiến độ chậm
-            </Typography>
-
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: '#5c8ed0',
-                '&:hover': { backgroundColor: '#4577bb' },
-                borderRadius: '4px'
-              }}
-              onClick={handleViewAllAtRisk}
-            >
-              Xem tất cả
-            </Button>
-          </Box>
+          ))
+        ) : (
+          <Typography variant="body1">Không có sinh viên nào có điểm dưới 2.0</Typography>
         )}
       </Box>
 
@@ -345,6 +234,7 @@ const Warnings = () => {
           <StudentSubmissionDialog
             open={isSubmissionDialogOpen}
             onClose={() => setSubmissionDialogOpen(false)}
+            assignmentName={upcomingAssignment.name}
           />
         </Box>
       )}

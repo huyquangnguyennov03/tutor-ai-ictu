@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
     GET_ALL_PROGRESS: "/api/progress", // Thêm endpoint mới để lấy tất cả tiến độ
     GET_STUDENT_REPORT: "/api/student-report/:studentid",
     PREDICT_INTERVENTION: "/api/predict-intervention/:studentid",
+    CREATE_WARNING: "/api/create-warning/:studentid",
   },
 
   // Course management endpoints
@@ -46,6 +47,7 @@ export const API_ENDPOINTS = {
     DELETE_COURSE: "/api/courses/:id",
     ENROLL_COURSE: "/api/courses/:id/enroll",
     GET_CLASS_PROGRESS: "/api/class-progress/:courseid",
+    GET_ACTIVITY_RATE: "/api/activity-rate/:courseid",
   },
 
   // Chapter management endpoints
@@ -71,6 +73,7 @@ export const API_ENDPOINTS = {
     GET_ASSIGNMENTS: "/api/assignments",
     GET_ASSIGNMENT_DETAILS: "/api/assignments/:id",
     SUBMIT_ASSIGNMENT: "/api/assignments/:id/submit",
+    GET_ASSIGNMENT_STATUS: "/api/assignment-status/:assignmentid",
   },
 
   // Error analysis endpoints

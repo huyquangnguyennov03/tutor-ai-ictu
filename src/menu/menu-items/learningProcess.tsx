@@ -20,7 +20,7 @@ const LearningProcess: MenuItem = {
       title: 'Tiến độ học tập',
       type: 'item',
       // url: '/tien-do-hoc-tap/:studentId',
-      url: '/tien-do-hoc-tap/:C01001',
+      url: '/tien-do-hoc-tap/:dtc21h48020103',
       icon: icons.FundOutlined,
       breadcrumbs: true,
       roles: [Roles.STUDENT],

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, Tabs, Tab, Box, Typography, Button, Table, TableHead, TableRow,
-  TableCell, TableBody, Paper, CircularProgress, Snackbar, Alert, DialogActions
+  TableCell, TableBody, Paper, CircularProgress, Snackbar, Alert, DialogActions, Chip
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
@@ -62,6 +62,19 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
   const handleViewDetails = (mssv: string) => {
     console.log(`Đang xem chi tiết sinh viên ${mssv}`);
     // Chức năng xem chi tiết sinh viên sẽ được triển khai sau
+  };
+
+  // Format deadline date
+  const formatDeadline = (isoDate: string) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   const renderTable = (students: StudentSubmission[], showReminder: boolean) => (
@@ -144,8 +157,21 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>
         <Typography variant="h6" component="div">
-          Danh sách sinh viên - {assignmentName}
+          {submissionData?.name || assignmentName}
         </Typography>
+        {submissionData?.deadline && (
+          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+              Deadline:
+            </Typography>
+            <Chip
+              label={formatDeadline(submissionData.deadline)}
+              color="warning"
+              size="small"
+              sx={{ fontWeight: 'medium' }}
+            />
+          </Box>
+        )}
       </DialogTitle>
 
       <DialogContent>
@@ -161,9 +187,36 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
           </Box>
         ) : (
           <>
+            {submissionData && (
+              <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <Paper sx={{ p: 2, flex: '1 1 200px', bgcolor: '#e3f2fd' }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Tổng số sinh viên</Typography>
+                  <Typography variant="h4">{submissionData.totalStudents || 0}</Typography>
+                </Paper>
+
+                <Paper sx={{ p: 2, flex: '1 1 200px', bgcolor: '#e8f5e9' }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Đã nộp bài</Typography>
+                  <Typography variant="h4">{submissionData.submittedCount || 0}</Typography>
+                </Paper>
+
+                <Paper sx={{ p: 2, flex: '1 1 200px', bgcolor: '#fff3e0' }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Chưa nộp bài</Typography>
+                  <Typography variant="h4">{submissionData.notSubmittedCount || 0}</Typography>
+                </Paper>
+
+                <Paper sx={{ p: 2, flex: '1 1 200px', bgcolor: '#f5f5f5' }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Tỷ lệ hoàn thành</Typography>
+                  <Typography variant="h4">
+                    {submissionData.totalStudents ?
+                      Math.round((submissionData.submittedCount / submissionData.totalStudents) * 100) : 0}%
+                  </Typography>
+                </Paper>
+              </Box>
+            )}
+
             <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}>
-              <Tab label={`Đã nộp (${submissionData?.studentsSubmitted?.length || 0})`} />
-              <Tab label={`Chưa nộp (${submissionData?.studentsNotSubmitted?.length || 0})`} />
+              <Tab label={`Đã nộp (${submissionData?.submittedCount || submissionData?.studentsSubmitted?.length || 0})`} />
+              <Tab label={`Chưa nộp (${submissionData?.notSubmittedCount || submissionData?.studentsNotSubmitted?.length || 0})`} />
             </Tabs>
 
             {tabIndex === 0 && submissionData && renderTable(submissionData.studentsSubmitted, false)}

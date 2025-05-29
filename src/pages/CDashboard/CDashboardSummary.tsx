@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Paper, Grid, Typography, LinearProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useSelector } from 'react-redux';
-import { selectClassInfo } from '@/redux/slices/teacherDashboardSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  selectClassInfo,
+  selectActivityRate,
+  fetchActivityRate,
+  selectStatus,
+  selectCurrentCourse,
+} from '@/redux/slices/teacherDashboardSlice';
+import type { AppDispatch } from '@/redux/store';
 
 // Custom styled components
 const StatsCard = styled(Paper)(({ theme }) => ({
@@ -16,15 +23,46 @@ const StatsCard = styled(Paper)(({ theme }) => ({
 }));
 
 const CDashboardSummary = () => {
-  // Get data from Redux store
+  const dispatch = useDispatch<AppDispatch>();
   const classInfo = useSelector(selectClassInfo);
+  const activityRate = useSelector(selectActivityRate);
+  const status = useSelector(selectStatus);
+  const currentCourse = useSelector(selectCurrentCourse);
+
+  // Fetch activity rate with currentCourse
+  useEffect(() => {
+    console.log(`useEffect triggered, status: ${status}, currentCourse: ${currentCourse}`);
+    if (currentCourse && (status === 'idle' || status === 'failed')) {
+      dispatch(fetchActivityRate(currentCourse));
+    }
+  }, [dispatch, status, currentCourse]);
 
   // Display placeholders if data is not yet loaded
+  if (!classInfo && (activityRate === null || status === 'loading')) {
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Paper sx={{ p: 2 }}>
+          <Typography>Loading class information...</Typography>
+        </Paper>
+      </Box>
+    );
+  }
+
   if (!classInfo) {
     return (
       <Box sx={{ mb: 4 }}>
         <Paper sx={{ p: 2 }}>
           <Typography>Loading class information...</Typography>
+        </Paper>
+      </Box>
+    );
+  }
+
+  if (status === 'failed') {
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Paper sx={{ p: 2 }}>
+          <Typography color="error">Error loading data. Please try again.</Typography>
         </Paper>
       </Box>
     );
@@ -53,7 +91,7 @@ const CDashboardSummary = () => {
                 Tỷ lệ hoạt động
               </Typography>
               <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                {classInfo.activityRate}%
+                {activityRate !== null ? `${activityRate}%` : `${classInfo.activityRate}%`}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 Sinh viên tích cực
