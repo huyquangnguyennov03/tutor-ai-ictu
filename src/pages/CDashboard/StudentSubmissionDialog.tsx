@@ -9,6 +9,7 @@ import {
   fetchAssignmentSubmission,
   selectCurrentAssignmentSubmission,
   selectAssignmentSubmissionStatus,
+  selectCurrentCourse,
   sendReminderToStudent,
   StudentSubmission
 } from '@/redux/slices/teacherDashboardSlice';
@@ -23,18 +24,18 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
   const dispatch = useDispatch<AppDispatch>();
   const submissionData = useSelector(selectCurrentAssignmentSubmission);
   const status = useSelector(selectAssignmentSubmissionStatus);
+  const currentCourse = useSelector(selectCurrentCourse);
 
   const [tabIndex, setTabIndex] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
-  // Tải dữ liệu khi mở dialog
   useEffect(() => {
     if (open && (!submissionData || submissionData.name !== assignmentName)) {
-      dispatch(fetchAssignmentSubmission(assignmentName));
+      dispatch(fetchAssignmentSubmission({ assignmentName, courseId: currentCourse }));
     }
-  }, [open, assignmentName, dispatch, submissionData]);
+  }, [open, assignmentName, currentCourse, dispatch, submissionData]);
 
   const handleTabChange = (_: React.SyntheticEvent, newIndex: number) => {
     setTabIndex(newIndex);
@@ -61,10 +62,8 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
 
   const handleViewDetails = (mssv: string) => {
     console.log(`Đang xem chi tiết sinh viên ${mssv}`);
-    // Chức năng xem chi tiết sinh viên sẽ được triển khai sau
   };
 
-  // Format deadline date
   const formatDeadline = (isoDate: string) => {
     if (!isoDate) return '';
     const date = new Date(isoDate);

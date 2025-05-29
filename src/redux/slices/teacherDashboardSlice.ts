@@ -198,10 +198,10 @@ export const fetchDashboardData = createAsyncThunk(
 // Async thunk cho việc lấy danh sách sinh viên đã nộp/chưa nộp bài tập
 export const fetchAssignmentSubmission = createAsyncThunk(
   'teacherDashboard/fetchAssignmentSubmission',
-  async (assignmentName: string, { rejectWithValue }) => {
+  async ({ assignmentName, courseId }: { assignmentName: string; courseId: string }, { rejectWithValue }) => {
     try {
       // Sử dụng apiService để lấy dữ liệu
-      const data = await apiService.fetchAssignmentSubmission(assignmentName);
+      const data = await apiService.fetchAssignmentSubmission(assignmentName, courseId);
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể tải dữ liệu bài tập');
@@ -212,10 +212,14 @@ export const fetchAssignmentSubmission = createAsyncThunk(
 // Async thunk for sending reminders to students
 export const sendReminder = createAsyncThunk(
   'teacherDashboard/sendReminder',
-  async (assignmentName: string, { rejectWithValue }) => {
+  async (assignmentName: string, { rejectWithValue, getState }) => {
     try {
+      // Lấy currentCourse từ state
+      const state = getState() as { teacherDashboard: TeacherDashboardState };
+      const courseId = state.teacherDashboard.currentCourse;
+
       // Sử dụng apiService để gửi nhắc nhở
-      const result = await apiService.sendReminder(assignmentName);
+      const result = await apiService.sendReminder(assignmentName, courseId);
       return { success: true, assignmentName };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể gửi nhắc nhở');
@@ -226,10 +230,14 @@ export const sendReminder = createAsyncThunk(
 // Async thunk for reminder to specific student
 export const sendReminderToStudent = createAsyncThunk(
   'teacherDashboard/sendReminderToStudent',
-  async ({ assignmentName, mssv }: { assignmentName: string; mssv: string }, { rejectWithValue }) => {
+  async ({ assignmentName, mssv }: { assignmentName: string; mssv: string }, { rejectWithValue, getState }) => {
     try {
+      // Lấy currentCourse từ state
+      const state = getState() as { teacherDashboard: TeacherDashboardState };
+      const courseId = state.teacherDashboard.currentCourse;
+
       // Sử dụng apiService để gửi nhắc nhở cho sinh viên cụ thể
-      const result = await apiService.sendReminderToStudent(assignmentName, mssv);
+      const result = await apiService.sendReminderToStudent(assignmentName, mssv, courseId);
       return { success: true, assignmentName, mssv };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể gửi nhắc nhở cho sinh viên');

@@ -172,68 +172,110 @@ export const apiService = {
   },
 
   // Fetch assignment submission data
-  fetchAssignmentSubmission: async (assignmentName: string) => {
+  fetchAssignmentSubmission: async (assignmentName: string, courseId: string) => {
     try {
-      // Tìm ID của bài tập từ tên
+      // Tìm ID của bài tập từ tên và courseId
       const assignmentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS}`);
-      const assignment = assignmentsResponse.data.find((a: any) => a.name === assignmentName);
+      
+      // Lọc bài tập theo courseId và tên bài tập
+      const numericCourseId = parseInt(courseId, 10);
+      const assignment = assignmentsResponse.data.find((a: any) => 
+        a.name === assignmentName && a.courseid === numericCourseId
+      );
 
       if (!assignment) {
-        throw new Error('Không tìm thấy bài tập');
+        // Nếu không tìm thấy bài tập chính xác, tìm bài tập tương tự trong khóa học hiện tại
+        const similarAssignment = assignmentsResponse.data.find((a: any) => 
+          a.name.includes(assignmentName.split(' - ')[0]) && a.courseid === numericCourseId
+        );
+        
+        if (!similarAssignment) {
+          throw new Error(`Không tìm thấy bài tập "${assignmentName}" trong khóa học ${courseId}`);
+        }
+        
+        // Sử dụng bài tập tương tự nếu tìm thấy
+        const assignmentId = similarAssignment.assignmentid;
+        const statusResponse = await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_STATUS.replace(':assignmentid', assignmentId.toString())}`
+        );
+        
+        return processAssignmentData(statusResponse.data, similarAssignment.name);
       }
 
       // Sử dụng endpoint mới để lấy trạng thái nộp bài
-      const assignmentId = assignment.id || 1; // Fallback to 1 if id is not available
+      const assignmentId = assignment.assignmentid;
       const statusResponse = await axios.get(
         `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_STATUS.replace(':assignmentid', assignmentId.toString())}`
       );
 
-      const data = statusResponse.data;
-      
-      // Chuyển đổi dữ liệu từ API sang định dạng cần thiết
-      const studentsSubmitted = data.submitted_students.map((student: any) => ({
-        mssv: student.mssv,
-        name: student.name,
-        progress: student.progress,
-        score: student.current_score ? student.current_score.toString() : 'N/A',
-        status: student.current_score > 8.5 ? 'ĐẠT CHỈ TIÊU' : 
-                student.current_score > 7 ? 'KHÁ' : 
-                student.current_score > 5 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
-      }));
-
-      const studentsNotSubmitted = data.not_submitted_students.map((student: any) => ({
-        mssv: student.mssv,
-        name: student.name,
-        progress: student.progress,
-        score: student.current_score ? student.current_score.toString() : 'N/A',
-        status: student.progress > 75 ? 'KHÁ' : 
-                student.progress > 50 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
-      }));
-
-      return {
-        name: data.assignment_name,
-        deadline: data.deadline,
-        studentsSubmitted,
-        studentsNotSubmitted,
-        totalStudents: data.total_students,
-        submittedCount: data.submitted_count,
-        notSubmittedCount: data.not_submitted_count
-      };
+      return apiService.processAssignmentData(statusResponse.data, assignment.name);
     } catch (error) {
       console.error('Error fetching assignment submission:', error);
       throw error;
     }
   },
+  
+  // Hàm xử lý dữ liệu bài tập
+  processAssignmentData: (data: any, assignmentName: string) => {
+    // Chuyển đổi dữ liệu từ API sang định dạng cần thiết
+    const studentsSubmitted = data.submitted_students.map((student: any) => ({
+      mssv: student.mssv,
+      name: student.name,
+      progress: student.progress,
+      score: student.current_score ? student.current_score.toString() : 'N/A',
+      status: student.current_score > 8.5 ? 'ĐẠT CHỈ TIÊU' : 
+              student.current_score > 7 ? 'KHÁ' : 
+              student.current_score > 5 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
+    }));
+
+    const studentsNotSubmitted = data.not_submitted_students.map((student: any) => ({
+      mssv: student.mssv,
+      name: student.name,
+      progress: student.progress,
+      score: student.current_score ? student.current_score.toString() : 'N/A',
+      status: student.progress > 75 ? 'KHÁ' : 
+              student.progress > 50 ? 'CẦN CẢI THIỆN' : 'NGUY HIỂM'
+    }));
+
+    return {
+      name: assignmentName || data.assignment_name,
+      deadline: data.deadline,
+      studentsSubmitted,
+      studentsNotSubmitted,
+      totalStudents: data.total_students,
+      submittedCount: data.submitted_count,
+      notSubmittedCount: data.not_submitted_count
+    };
+  },
 
   // Send reminder to all students
-  sendReminder: async (assignmentName: string) => {
+  sendReminder: async (assignmentName: string, courseId: string) => {
     try {
+      // Tìm ID của bài tập từ tên và courseId
+      const assignmentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS}`);
+      
+      // Lọc bài tập theo courseId và tên bài tập
+      const numericCourseId = parseInt(courseId, 10);
+      const assignment = assignmentsResponse.data.find((a: any) => 
+        a.name === assignmentName && a.courseid === numericCourseId
+      );
+
+      // Nếu không tìm thấy bài tập chính xác, tìm bài tập tương tự trong khóa học hiện tại
+      if (!assignment) {
+        console.warn(`Không tìm thấy bài tập "${assignmentName}" trong khóa học ${courseId}`);
+      }
+
       const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.WARNINGS.UPDATE_WARNING_STATUS}`, {
         warningid: 1,
-        status: 'contacted'
+        status: 'contacted',
+        assignmentName: assignment ? assignment.name : assignmentName,
+        courseId: numericCourseId
       });
 
-      return { success: true, message: `Đã gửi nhắc nhở cho tất cả sinh viên về ${assignmentName}` };
+      return { 
+        success: true, 
+        message: `Đã gửi nhắc nhở cho tất cả sinh viên về ${assignment ? assignment.name : assignmentName}` 
+      };
     } catch (error) {
       console.error('Error sending reminder:', error);
       throw error;
@@ -241,15 +283,27 @@ export const apiService = {
   },
 
   // Send reminder to specific student
-  sendReminderToStudent: async (assignmentName: string, mssv: string) => {
+  sendReminderToStudent: async (assignmentName: string, mssv: string, courseId: string) => {
     try {
+      // Tìm ID của bài tập từ tên và courseId
+      const assignmentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENTS}`);
+      
+      // Lọc bài tập theo courseId và tên bài tập
+      const numericCourseId = parseInt(courseId, 10);
+      const assignment = assignmentsResponse.data.find((a: any) => 
+        a.name === assignmentName && a.courseid === numericCourseId
+      );
+
+      // Nếu không tìm thấy bài tập chính xác, tìm bài tập tương tự trong khóa học hiện tại
+      const actualAssignmentName = assignment ? assignment.name : assignmentName;
+
       const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.CHAT.SEND_MESSAGE}`, {
         senderid: 1,
         receiverid: mssv,
-        message: `Nhắc nhở: Bạn cần nộp bài tập "${assignmentName}" trước thời hạn.`
+        message: `Nhắc nhở: Bạn cần nộp bài tập "${actualAssignmentName}" trước thời hạn.`
       });
 
-      return { success: true, message: `Đã gửi nhắc nhở cho sinh viên ${mssv} về ${assignmentName}` };
+      return { success: true, message: `Đã gửi nhắc nhở cho sinh viên ${mssv} về ${actualAssignmentName}` };
     } catch (error) {
       console.error('Error sending reminder to student:', error);
       throw error;

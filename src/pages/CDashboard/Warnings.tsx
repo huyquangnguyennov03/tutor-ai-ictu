@@ -52,6 +52,7 @@ const Warnings = () => {
 
   const handleSendReminder = (): void => {
     if (upcomingAssignment) {
+      // Đảm bảo sử dụng tên bài tập đầy đủ
       dispatch(sendReminder(upcomingAssignment.name));
     }
   };
