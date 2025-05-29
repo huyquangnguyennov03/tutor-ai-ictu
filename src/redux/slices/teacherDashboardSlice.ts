@@ -283,12 +283,19 @@ const teacherDashboardSlice = createSlice({
     },
     setCurrentCourse(state, action: PayloadAction<string>) {
       state.currentCourse = action.payload;
+      // Xóa dữ liệu bài tập hiện tại khi chuyển lớp để tránh hiển thị dữ liệu cũ
+      state.currentAssignmentSubmission = null;
+      state.assignmentSubmissionStatus = 'idle';
     },
     setCurrentSemester(state, action: PayloadAction<string>) {
       state.currentSemester = action.payload;
     },
     clearError(state) {
       state.error = null;
+    },
+    clearCurrentAssignmentSubmission(state) {
+      state.currentAssignmentSubmission = null;
+      state.assignmentSubmissionStatus = 'loading';
     },
     sortStudents(state, action: PayloadAction<'alphabetical' | 'score' | 'progress'>) {
       const sortType = action.payload;
@@ -408,6 +415,7 @@ export const {
   setCurrentCourse,
   setCurrentSemester,
   clearError,
+  clearCurrentAssignmentSubmission,
   sortStudents,
   filterStudents
 } = teacherDashboardSlice.actions;

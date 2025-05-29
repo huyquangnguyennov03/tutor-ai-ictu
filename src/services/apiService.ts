@@ -189,17 +189,23 @@ export const apiService = {
           a.name.includes(assignmentName.split(' - ')[0]) && a.courseid === numericCourseId
         );
         
-        if (!similarAssignment) {
-          throw new Error(`Không tìm thấy bài tập "${assignmentName}" trong khóa học ${courseId}`);
+        // Nếu không tìm thấy bài tập tương tự, tìm bài tập đầu tiên trong khóa học hiện tại
+        const firstAssignmentInCourse = assignmentsResponse.data.find((a: any) => 
+          a.courseid === numericCourseId
+        );
+        
+        if (!similarAssignment && !firstAssignmentInCourse) {
+          throw new Error(`Không tìm thấy bài tập nào trong khóa học ${courseId}`);
         }
         
-        // Sử dụng bài tập tương tự nếu tìm thấy
-        const assignmentId = similarAssignment.assignmentid;
+        // Sử dụng bài tập tương tự hoặc bài tập đầu tiên nếu tìm thấy
+        const useAssignment = similarAssignment || firstAssignmentInCourse;
+        const assignmentId = useAssignment.assignmentid;
         const statusResponse = await axios.get(
           `${API_BASE_URL}${API_ENDPOINTS.ASSIGNMENTS.GET_ASSIGNMENT_STATUS.replace(':assignmentid', assignmentId.toString())}`
         );
         
-        return processAssignmentData(statusResponse.data, similarAssignment.name);
+        return processAssignmentData(statusResponse.data, useAssignment.name);
       }
 
       // Sử dụng endpoint mới để lấy trạng thái nộp bài

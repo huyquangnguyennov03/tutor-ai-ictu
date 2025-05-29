@@ -11,7 +11,8 @@ import {
   selectAssignmentSubmissionStatus,
   selectCurrentCourse,
   sendReminderToStudent,
-  StudentSubmission
+  StudentSubmission,
+  clearCurrentAssignmentSubmission
 } from '@/redux/slices/teacherDashboardSlice';
 
 interface StudentSubmissionDialogProps {
@@ -29,8 +30,22 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
   const [tabIndex, setTabIndex] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
+  const [lastCourseId, setLastCourseId] = useState<string | null>(null);
 
+  // Theo dõi thay đổi của currentCourse để xóa dữ liệu cũ
+  useEffect(() => {
+    if (lastCourseId && lastCourseId !== currentCourse && open) {
+      // Xóa dữ liệu bài tập hiện tại khi chuyển lớp
+      dispatch(clearCurrentAssignmentSubmission());
+    }
+    
+    if (currentCourse) {
+      setLastCourseId(currentCourse);
+    }
+  }, [currentCourse, lastCourseId, dispatch, open]);
+
+  // Tải dữ liệu bài tập
   useEffect(() => {
     if (open && (!submissionData || submissionData.name !== assignmentName)) {
       dispatch(fetchAssignmentSubmission({ assignmentName, courseId: currentCourse }));
@@ -42,7 +57,10 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
   };
 
   const handleReminderClick = (mssv: string, studentName: string) => {
-    dispatch(sendReminderToStudent({ assignmentName, mssv }))
+    // Sử dụng tên bài tập từ submissionData nếu có, nếu không thì dùng tên được truyền vào
+    const actualAssignmentName = submissionData?.name || assignmentName;
+    
+    dispatch(sendReminderToStudent({ assignmentName: actualAssignmentName, mssv }))
       .unwrap()
       .then(() => {
         setSnackbarMessage(`Đã gửi nhắc nhở cho sinh viên ${studentName} (${mssv})`);
@@ -156,9 +174,12 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>
         <Typography variant="h6" component="div">
-          {submissionData?.name || assignmentName}
+          {status === 'loading' ? 
+            'Danh sách...' :
+            submissionData?.name || assignmentName
+          }
         </Typography>
-        {submissionData?.deadline && (
+        {submissionData?.deadline && status !== 'loading' && (
           <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
             <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
               Deadline:
@@ -181,8 +202,16 @@ const StudentSubmissionDialog = ({ open, onClose, assignmentName = 'Bài tập 5
         ) : status === 'failed' ? (
           <Box sx={{ py: 2 }}>
             <Alert severity="error">
-              Không thể tải dữ liệu. Vui lòng thử lại sau.
+              Không thể tải dữ liệu bài tập. Vui lòng thử lại sau.
             </Alert>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <Button 
+                variant="outlined" 
+                onClick={() => dispatch(fetchAssignmentSubmission({ assignmentName, courseId: currentCourse }))}
+              >
+                Thử lại
+              </Button>
+            </Box>
           </Box>
         ) : (
           <>
