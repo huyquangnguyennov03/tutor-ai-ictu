@@ -38,9 +38,9 @@ const getProgressColor = (progress: number): string => {
 };
 
 const getStatusText = (score: number): { text: string; color: string } => {
-  if (score >= 8) return { text: 'ĐẠT CHỈ TIÊU', color: '#4caf50' }; // Green
-  if (score >= 7) return { text: 'KHÁ', color: '#2196f3' }; // Blue
-  if (score >= 5) return { text: 'CẦN CẢI THIỆN', color: '#ff9800' }; // Orange
+  if (score >= 3.2) return { text: 'ĐẠT CHỈ TIÊU', color: '#4caf50' }; // Green
+  if (score >= 2.8) return { text: 'KHÁ', color: '#2196f3' }; // Blue
+  if (score >= 2.0) return { text: 'CẦN CẢI THIỆN', color: '#ff9800' }; // Orange
   return { text: 'NGUY HIỂM', color: '#f44336' }; // Red
 };
 
