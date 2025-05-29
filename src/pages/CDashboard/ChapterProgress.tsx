@@ -34,8 +34,8 @@ const ChapterProgress: React.FC = () => {
   // Color mapping based on completion rate
   const getBarColor = (rate: number): string => {
     if (rate >= 85) return '#4caf50'; // Green
-    if (rate >= 65) return '#ff9800'; // Orange
-    return '#f44336'; // Red
+    if (rate >= 65) return '#2196f3'; // Blue
+    return '#ff9800'; // Orange
   };
 
   // Handle mouse events for tooltip
@@ -62,13 +62,14 @@ const ChapterProgress: React.FC = () => {
 
             {/* Bar Chart */}
             <Box sx={{
-              height: 280,
+              height: 400, // Tăng chiều cao container lên 400px để biểu đồ cao hơn
               mt: 2,
               mb: 4,
               border: '1px solid #e0e0e0',
-              borderRadius: 1,
+              borderRadius: 2,
               padding: 2,
-              background: '#ffffff'
+              background: '#ffffff',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
             }}>
               <Box sx={{
                 display: 'flex',
@@ -121,7 +122,7 @@ const ChapterProgress: React.FC = () => {
                       height: '100%',
                       alignItems: 'flex-end',
                       position: 'relative',
-                      paddingLeft: 3
+                      paddingLeft: 3,
                     }}
                   >
                     {sortedChapters.map((chapter, index) => (
@@ -129,13 +130,17 @@ const ChapterProgress: React.FC = () => {
                         key={index}
                         sx={{
                           flex: 1,
-                          mx: 1,
+                          mx: 0.5,
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           height: '100%',
                           justifyContent: 'flex-end',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                          },
                         }}
                         aria-owns={open ? 'mouse-over-popover' : undefined}
                         aria-haspopup="true"
@@ -144,11 +149,13 @@ const ChapterProgress: React.FC = () => {
                       >
                         <Box
                           sx={{
-                            width: '75%',
+                            width: '80%',
                             bgcolor: getBarColor(chapter.completionRate),
-                            height: `${chapter.completionRate}%`,
+                            height: `${chapter.completionRate}%`, // Giữ nguyên tỷ lệ phần trăm
                             maxHeight: '100%',
                             position: 'relative',
+                            borderRadius: '8px',
+                            transition: 'height 0.3s ease-in-out',
                           }}
                         />
                         <Typography variant="caption" sx={{ mt: 1, color: '#555555' }}>
@@ -234,7 +241,7 @@ const ChapterProgress: React.FC = () => {
                       </Box>
                     </TableCell>
                     <TableCell>{chapter.averageScore.toFixed(1)}</TableCell>
-                    <TableCell>{chapter.studentsCompleted}{chapter.totalStudents}</TableCell>
+                    <TableCell>{chapter.studentsCompleted}</TableCell>
                     <TableCell>{chapter.estimatedTime}</TableCell>
                   </TableRow>
                 ))}

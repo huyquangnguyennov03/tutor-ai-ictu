@@ -13,7 +13,7 @@ import {
   LinearProgress
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch } from '@/redux/store'; // Import AppDispatch type
+import { AppDispatch } from '@/redux/store';
 import {
   selectCommonErrors,
   selectAssignments,
@@ -24,13 +24,15 @@ import {
 const AssignmentManagement = () => {
   const commonErrors = useSelector(selectCommonErrors);
   const assignments = useSelector(selectAssignments);
-  const dispatch = useDispatch<AppDispatch>(); // Use typed dispatch
+  const dispatch = useDispatch<AppDispatch>();
 
   // Function to get appropriate color for progress bar
   const getProgressColor = (completionRate: number): string => {
-    if (completionRate >= 70) return 'success.main';
-    if (completionRate >= 40) return 'warning.main';
-    return 'error.main';
+    if (completionRate >= 85) return '#4caf50'; // Green
+    if (completionRate >= 75) return '#2196f3'; // Blue
+    if (completionRate >= 50) return '#757575'; // Gray
+    if (completionRate >= 25) return '#ff9800'; // Orange
+    return '#f44336'; // Red
   };
 
   // Functions to handle button clicks connected to Redux actions
@@ -124,7 +126,7 @@ const AssignmentManagement = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      sx={{ mr: 1, backgroundColor: '#5b9bd5' }}
+                      sx={{ mr: 1, backgroundColor: '#2196f3' }}
                       onClick={() => handleSendReminder(assignment.name)}
                     >
                       Gửi nhắc nhở
@@ -132,7 +134,7 @@ const AssignmentManagement = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      sx={{ backgroundColor: '#ed7d31' }}
+                      sx={{ backgroundColor: '#ff9800' }}
                       onClick={() => handleExtendDeadline(assignment.name)}
                     >
                       Gia hạn
