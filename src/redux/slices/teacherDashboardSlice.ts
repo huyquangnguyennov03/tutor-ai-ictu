@@ -8,6 +8,7 @@ import { apiService } from '@/services/apiService';
 export interface Student {
   mssv: string;
   name: string;
+  class?: string; // Thêm trường class từ backend
   progress: number;
   score: number;
   status: 'đạt chỉ tiêu' | 'nguy hiểm' | 'cần cải thiện' | 'khá';
@@ -62,9 +63,12 @@ export interface Assignment {
 export interface StudentWarning {
   mssv: string;
   name: string;
+  class?: string; // Thêm trường class từ backend
   score: number;
   progress: number;
   issue: string;
+  warningtype?: string; // Thêm trường warningtype từ backend
+  severity?: string; // Thêm trường severity từ backend
   priority: 'khẩn cấp' | 'cảnh báo' | 'thông tin';
 }
 
@@ -115,17 +119,27 @@ export interface ClassInfo {
     name: string;
     title: string;
   };
+  students_list?: any[]; // Thêm danh sách sinh viên với trường class
 }
 
 export interface CourseOption {
   id: string;
   name: string;
   fullName: string;
+  difficulty?: string; // Thêm trường difficulty từ backend
+  category?: string; // Thêm trường category từ backend
 }
 
 export interface SemesterOption {
   id: string;
   name: string;
+}
+
+// Interface cho lộ trình học tập
+export interface LearningPath {
+  currentCourses: any[];
+  recommendedCourses: any[];
+  allCourses: any[];
 }
 
 // Main state interface
@@ -157,6 +171,8 @@ export interface TeacherDashboardState {
   activityRate: number | null;
   currentAssignmentSubmission: AssignmentSubmission | null;
   assignmentSubmissionStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  learningPath: LearningPath | null;
+  learningPathStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
 // Initial state
@@ -178,7 +194,9 @@ const initialState: TeacherDashboardState = {
   error: null,
   activityRate: null,
   currentAssignmentSubmission: null,
-  assignmentSubmissionStatus: 'idle'
+  assignmentSubmissionStatus: 'idle',
+  learningPath: null,
+  learningPathStatus: 'idle'
 };
 
 // Async thunk for fetching dashboard data
@@ -269,6 +287,19 @@ export const fetchActivityRate = createAsyncThunk(
       return response.data.activity_rate;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Không thể tải tỷ lệ hoạt động');
+    }
+  }
+);
+
+// Async thunk để lấy lộ trình học tập của sinh viên
+export const fetchLearningPath = createAsyncThunk(
+  'teacherDashboard/fetchLearningPath',
+  async (studentId: string, { rejectWithValue }) => {
+    try {
+      const data = await apiService.fetchLearningPath(studentId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Không thể tải lộ trình học tập');
     }
   }
 );

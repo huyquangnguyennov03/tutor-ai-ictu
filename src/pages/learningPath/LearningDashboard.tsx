@@ -1,11 +1,9 @@
 // src/pages/learningPath/LearningDashboard.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import {
-  fetchAllCoursesAsync,
-  fetchInProgressCoursesAsync,
-  fetchRecommendedCoursesAsync,
+  fetchLearningPathAsync,
   selectAllCourses,
   selectInProgressCourses,
   selectRecommendedCourses,
@@ -35,12 +33,13 @@ const LearningDashboard: React.FC = () => {
   const status = useSelector(selectStatus);
   const error = useSelector(selectError);
 
+  // Giả định studentId, trong thực tế có thể lấy từ authentication state
+  const [studentId] = useState('1');
+
   useEffect(() => {
-    // Tải dữ liệu khi component được mount
-    dispatch(fetchAllCoursesAsync());
-    dispatch(fetchInProgressCoursesAsync());
-    dispatch(fetchRecommendedCoursesAsync());
-  }, [dispatch]);
+    // Tải dữ liệu lộ trình học tập khi component được mount
+    dispatch(fetchLearningPathAsync(studentId));
+  }, [dispatch, studentId]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     dispatch(setActiveTab(newValue));

@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
   }, [dispatch, studentId]); // Remove status dependency to ensure fetching on studentId change
 
   const handleBack = () => {
-    navigate('/tong-quan-tien-do');
+    navigate('/app/tong-quan-tien-do');
   };
 
   return (

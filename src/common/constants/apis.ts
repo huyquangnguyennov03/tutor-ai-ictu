@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
     GET_STUDENT_REPORT: "/api/student-report/:studentid",
     PREDICT_INTERVENTION: "/api/predict-intervention/:studentid",
     CREATE_WARNING: "/api/create-warning/:studentid",
+    GET_LEARNING_PATH: "/api/learning-path/:studentid", // Thêm endpoint mới cho lộ trình học tập
   },
 
   // Course management endpoints

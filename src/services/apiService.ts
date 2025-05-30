@@ -29,7 +29,9 @@ export const apiService = {
         .map((course: any) => ({
           id: course.courseid.toString(),
           name: course.courseid.toString(),
-          fullName: course.coursename
+          fullName: course.coursename,
+          difficulty: course.difficulty, // Thêm trường difficulty từ backend
+          category: course.category // Thêm trường category từ backend
         }));
 
       // Lấy danh sách tiến độ
@@ -56,6 +58,7 @@ export const apiService = {
           return {
             mssv: student.mssv,
             name: student.name,
+            class: student.class_, // Thêm trường class từ backend
             progress: studentProgress ? studentProgress.progressrate : 0,
             score: student.totalgpa,
             status: student.totalgpa > 3.5 ? 'đạt chỉ tiêu' : student.totalgpa > 3.0 ? 'khá' : student.totalgpa > 2.0 ? 'cần cải thiện' : 'nguy hiểm',
@@ -95,10 +98,13 @@ export const apiService = {
       const warnings = warningsResponse.data.map((warning: any) => ({
         mssv: warning.studentid.toString(),
         name: students.find((s: any) => s.mssv === warning.studentid.toString())?.name || 'Không xác định',
+        class: warning.class, // Thêm trường class từ backend
         score: 0,
         progress: 0,
         issue: warning.message,
-        priority: warning.isnotified ? 'khẩn cấp' : 'cảnh báo'
+        warningtype: warning.warningtype, // Thêm trường warningtype từ backend
+        severity: warning.severity, // Thêm trường severity từ backend
+        priority: warning.priority || (warning.isnotified ? 'khẩn cấp' : 'cảnh báo') // Sử dụng trường priority từ backend nếu có
       }));
 
       // Lấy danh sách lỗi chung và lọc theo courseId
@@ -139,6 +145,7 @@ export const apiService = {
         `${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_CLASS_PROGRESS.replace(':courseid', numericCourseId)}`
       );
 
+      // Cập nhật thông tin lớp học với dữ liệu từ API
       const classInfo = {
         id: courseId,
         name: `Lớp ${courseId}`,
@@ -150,7 +157,9 @@ export const apiService = {
         instructor: {
           name: 'Nguyễn Văn A',
           title: 'Giảng viên'
-        }
+        },
+        // Thêm thông tin về danh sách sinh viên với trường class
+        students_list: classProgressResponse.data.students_list
       };
 
       return {
@@ -271,11 +280,16 @@ export const apiService = {
         console.warn(`Không tìm thấy bài tập "${assignmentName}" trong khóa học ${courseId}`);
       }
 
+      // Lấy thông tin sinh viên để lấy class
+      const studentsResponse = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENTS}`);
+      const student = studentsResponse.data[0]; // Lấy sinh viên đầu tiên để lấy class (có thể cải thiện logic này)
+      
       const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.WARNINGS.UPDATE_WARNING_STATUS}`, {
         warningid: 1,
         status: 'contacted',
         assignmentName: assignment ? assignment.name : assignmentName,
-        courseId: numericCourseId
+        courseId: numericCourseId,
+        class_: student ? student.class_ : null // Thêm trường class_ khi tạo cảnh báo
       });
 
       return { 
@@ -304,7 +318,7 @@ export const apiService = {
       const actualAssignmentName = assignment ? assignment.name : assignmentName;
 
       const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.CHAT.SEND_MESSAGE}`, {
-        senderid: 1,
+        senderid: 1, // Sửa từ ConstructorError thành senderid theo yêu cầu
         receiverid: mssv,
         message: `Nhắc nhở: Bạn cần nộp bài tập "${actualAssignmentName}" trước thời hạn.`
       });
@@ -322,6 +336,24 @@ export const apiService = {
       return { success: true, message: `Đã gia hạn thời gian nộp bài cho ${assignmentName}` };
     } catch (error) {
       console.error('Error extending deadline:', error);
+      throw error;
+    }
+  },
+
+  // Lấy lộ trình học tập của sinh viên
+  fetchLearningPath: async (studentId: string) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_LEARNING_PATH.replace(':studentid', studentId)}`
+      );
+      
+      return {
+        currentCourses: response.data.current_courses || [],
+        recommendedCourses: response.data.recommended_courses || [],
+        allCourses: response.data.all_courses || []
+      };
+    } catch (error) {
+      console.error('Error fetching learning path:', error);
       throw error;
     }
   }

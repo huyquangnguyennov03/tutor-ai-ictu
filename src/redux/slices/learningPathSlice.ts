@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import axios from 'axios';
 import { API_ENDPOINTS, API_BASE_URL } from '@/common/constants/apis';
+import { apiService } from '@/services/apiService';
 
 // Define Course interface
 export interface Course {
@@ -49,44 +50,9 @@ const initialState: LearningPathState = {
   error: null
 };
 
-// Async thunks
-export const fetchAllCoursesAsync = createAsyncThunk(
-  'learningPath/fetchAllCourses',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Sử dụng API thực tế
-      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
-      
-      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
-      const courses: Course[] = response.data.map((course: any) => ({
-        id: course.courseid.toString(),
-        title: course.coursename || 'Khóa học không tên',
-        description: `Khóa học ${course.coursename} - ${course.semester} (${course.credits} tín chỉ)`,
-        thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
-        instructor: 'Giảng viên',
-        duration: '8',
-        level: 'Intermediate',
-        totalModules: 10,
-        completedModules: 0, // Mặc định là 0, sẽ cập nhật sau khi có dữ liệu tiến độ
-        isEnrolled: course.status === 'ACTIVE',
-        rating: 4.5,
-        tags: ['programming', 'beginner'],
-        icon: getCourseIcon(course.coursename)
-      }));
-      
-      return courses;
-    } catch (error) {
-      if (error instanceof Error) {
-        return rejectWithValue(error.message);
-      }
-      return rejectWithValue('Đã xảy ra lỗi khi tải danh sách khóa học');
-    }
-  }
-);
-
 // Hàm hỗ trợ để xác định icon dựa trên tên khóa học
 function getCourseIcon(courseName: string): 'book' | 'layers' | 'code' | 'school' {
-  const lowerCaseName = courseName.toLowerCase();
+  const lowerCaseName = (courseName || '').toLowerCase();
   if (lowerCaseName.includes('c programming')) {
     return 'code';
   } else if (lowerCaseName.includes('java')) {
@@ -100,33 +66,76 @@ function getCourseIcon(courseName: string): 'book' | 'layers' | 'code' | 'school
   }
 }
 
+// Hàm chuyển đổi dữ liệu khóa học từ API sang định dạng ứng dụng
+function mapCourseData(course: any): Course {
+  return {
+    id: course.courseid?.toString() || course.id?.toString() || '0',
+    title: course.coursename || course.title || 'Khóa học không tên',
+    description: course.description || `Khóa học ${course.coursename || course.title} ${course.semester ? `- ${course.semester}` : ''} ${course.credits ? `(${course.credits} tín chỉ)` : ''}`,
+    thumbnail: course.thumbnail || '/images/course-thumbnail.jpg',
+    instructor: course.instructor || 'Giảng viên',
+    duration: course.duration?.toString() || '8',
+    level: course.difficulty || course.level || 'intermediate',
+    totalModules: course.totalModules || 10,
+    completedModules: course.completedModules || 0,
+    isEnrolled: course.isEnrolled || course.status === 'ACTIVE',
+    rating: course.rating || 4.5,
+    tags: course.tags || [course.category || 'programming'],
+    icon: getCourseIcon(course.coursename || course.title)
+  };
+}
+
+// Async thunk để lấy lộ trình học tập (tất cả trong một API call)
+export const fetchLearningPathAsync = createAsyncThunk(
+  'learningPath/fetchLearningPath',
+  async (studentId: string = '1', { rejectWithValue }) => {
+    try {
+      // Sử dụng apiService để lấy lộ trình học tập
+      const learningPathData = await apiService.fetchLearningPath(studentId);
+      
+      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      const allCourses = (learningPathData.allCourses || []).map(mapCourseData);
+      const currentCourses = (learningPathData.currentCourses || []).map(mapCourseData);
+      const recommendedCourses = (learningPathData.recommendedCourses || []).map(mapCourseData);
+      
+      return {
+        allCourses,
+        currentCourses,
+        recommendedCourses
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Đã xảy ra lỗi khi tải lộ trình học tập');
+    }
+  }
+);
+
+// Giữ lại các thunk cũ để tương thích ngược, nhưng sử dụng API mới
+export const fetchAllCoursesAsync = createAsyncThunk(
+  'learningPath/fetchAllCourses',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      // Sử dụng API mới
+      const result = await dispatch(fetchLearningPathAsync('1')).unwrap();
+      return result.allCourses;
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Đã xảy ra lỗi khi tải danh sách khóa học');
+    }
+  }
+);
+
 export const fetchInProgressCoursesAsync = createAsyncThunk(
   'learningPath/fetchInProgressCourses',
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      // Sử dụng API thực tế
-      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
-      
-      // Lọc các khóa học đang học (status = ACTIVE)
-      const inProgressCourses: Course[] = response.data
-        .filter((course: any) => course.status === 'ACTIVE')
-        .map((course: any) => ({
-          id: course.courseid.toString(),
-          title: course.coursename || 'Khóa học không tên',
-          description: `Khóa học ${course.coursename} - ${course.semester} (${course.credits} tín chỉ)`,
-          thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
-          instructor: 'Giảng viên',
-          duration: '8',
-          level: 'Intermediate',
-          totalModules: 10,
-          completedModules: 3, // Giả định tiến độ
-          isEnrolled: true,
-          rating: 4.5,
-          tags: ['programming', 'beginner'],
-          icon: getCourseIcon(course.coursename)
-        }));
-      
-      return inProgressCourses;
+      // Sử dụng API mới
+      const result = await dispatch(fetchLearningPathAsync('1')).unwrap();
+      return result.currentCourses;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -138,31 +147,11 @@ export const fetchInProgressCoursesAsync = createAsyncThunk(
 
 export const fetchRecommendedCoursesAsync = createAsyncThunk(
   'learningPath/fetchRecommendedCourses',
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      // Sử dụng API thực tế
-      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
-      
-      // Lọc các khóa học được đề xuất (giả định: lấy 3 khóa học đầu tiên)
-      const recommendedCourses: Course[] = response.data
-        .slice(0, 3)
-        .map((course: any) => ({
-          id: course.courseid.toString(),
-          title: course.coursename || 'Khóa học không tên',
-          description: `Khóa học ${course.coursename} được đề xuất dựa trên tiến độ học tập của bạn`,
-          thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
-          instructor: 'Giảng viên',
-          duration: '8',
-          level: 'Beginner',
-          totalModules: 10,
-          completedModules: 0,
-          isEnrolled: false,
-          rating: 4.5,
-          tags: ['programming', 'recommended'],
-          icon: getCourseIcon(course.coursename)
-        }));
-      
-      return recommendedCourses;
+      // Sử dụng API mới
+      const result = await dispatch(fetchLearningPathAsync('1')).unwrap();
+      return result.recommendedCourses;
     } catch (error) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -309,7 +298,23 @@ const learningPathSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch all courses
+      // Fetch learning path (new API)
+      .addCase(fetchLearningPathAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchLearningPathAsync.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.courses = action.payload.allCourses;
+        state.inProgressCourses = action.payload.currentCourses;
+        state.recommendedCourses = action.payload.recommendedCourses;
+        state.error = null;
+      })
+      .addCase(fetchLearningPathAsync.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as string;
+      })
+      
+      // Fetch all courses (compatibility)
       .addCase(fetchAllCoursesAsync.pending, (state) => {
         state.status = 'loading';
       })
@@ -323,7 +328,7 @@ const learningPathSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // Fetch in progress courses
+      // Fetch in progress courses (compatibility)
       .addCase(fetchInProgressCoursesAsync.pending, (state) => {
         state.status = 'loading';
       })
@@ -337,7 +342,7 @@ const learningPathSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // Fetch recommended courses
+      // Fetch recommended courses (compatibility)
       .addCase(fetchRecommendedCoursesAsync.pending, (state) => {
         state.status = 'loading';
       })

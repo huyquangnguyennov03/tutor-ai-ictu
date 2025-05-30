@@ -81,12 +81,14 @@ const StudentList: React.FC = () => {
     localStorage.setItem('selectedStudent', JSON.stringify({
       name: student.name,
       studentId: student.mssv,
+      class: student.class || '', // Thêm thông tin lớp học từ dữ liệu sinh viên
       courseLevel: 'Lập trình nâng cao', // Default value or get from your data
       updateDate: new Date().toLocaleDateString('vi-VN')
     }));
 
     // Navigate to student progress page with student ID as parameter
-    navigate(`/tien-do-hoc-tap/${student.mssv}`);
+    // Sử dụng đường dẫn đầy đủ với tiền tố /app
+    navigate(`/app/tien-do-hoc-tap/${student.mssv}`);
   };
 
   // Toggle dialog open/close
