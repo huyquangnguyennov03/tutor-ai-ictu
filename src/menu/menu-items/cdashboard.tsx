@@ -22,7 +22,7 @@ const cdashboard: MenuItem = {
       url: '/tong-quan-tien-do',
       icon: icons.LineChartOutlined,
       breadcrumbs: true,
-      // roles: [Roles.TEACHER],
+      roles: [Roles.TEACHER],
     }
   ]
 };

@@ -79,7 +79,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
         <Box display="flex" flexDirection="column" mb={1}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
             <Typography variant="body2" color="text.secondary">
-              {course.completedModules} of {course.totalModules} modules completed
+              {course.completedModules} / {course.totalModules} bài học đã hoàn thành
             </Typography>
             <Typography variant="body2" fontWeight="medium">
               {progress.toFixed(0)}%
@@ -113,7 +113,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             }}
           />
           <Chip
-            label={`${course.duration} weeks`}
+            label={`${course.duration} tuần`}
             size="small"
             variant="outlined"
             sx={{
@@ -140,10 +140,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
           }}
         >
           {!course.isEnrolled
-            ? 'Enroll Course'
+            ? 'Đăng ký khóa học'
             : course.completedModules > 0
-              ? 'Continue Learning'
-              : 'Start Learning'}
+              ? 'Tiếp tục học'
+              : 'Bắt đầu học'}
         </Button>
       </Box>
     </Card>

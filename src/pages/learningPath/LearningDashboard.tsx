@@ -55,7 +55,7 @@ const LearningDashboard: React.FC = () => {
           Lộ trình học tập
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Theo dõi tiến độ học tập và khám phá các khóa học mới
+          Theo dõi tiến độ học tập và khám phá các khóa học mới tại ICTU
         </Typography>
       </Box>
 
@@ -95,8 +95,8 @@ const LearningDashboard: React.FC = () => {
             },
           }}
         >
-          <Tab label="Đang học" disableRipple />
-          <Tab label="Đề xuất" disableRipple />
+          <Tab label="Khóa học đang học" disableRipple />
+          <Tab label="Khóa học đề xuất" disableRipple />
           <Tab label="Tất cả khóa học" disableRipple />
         </Tabs>
       </Box>
@@ -105,7 +105,7 @@ const LearningDashboard: React.FC = () => {
         <CourseList 
           courses={inProgressCourses} 
           loading={isLoading} 
-          emptyMessage="Bạn chưa có khóa học nào đang học. Hãy đăng ký một khóa học để bắt đầu!"
+          emptyMessage="Bạn chưa có khóa học nào đang học. Hãy đăng ký một khóa học để bắt đầu học!"
         />
       </TabPanel>
 
@@ -113,7 +113,7 @@ const LearningDashboard: React.FC = () => {
         <CourseList 
           courses={recommendedCourses} 
           loading={isLoading} 
-          emptyMessage="Hiện tại không có khóa học nào được đề xuất cho bạn."
+          emptyMessage="Hiện tại không có khóa học nào được đề xuất cho bạn. Vui lòng quay lại sau!"
         />
       </TabPanel>
 
@@ -121,7 +121,7 @@ const LearningDashboard: React.FC = () => {
         <CourseList 
           courses={allCourses} 
           loading={isLoading} 
-          emptyMessage="Hiện tại không có khóa học nào."
+          emptyMessage="Hiện tại không có khóa học nào. Vui lòng quay lại sau!"
         />
       </TabPanel>
     </Container>

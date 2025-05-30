@@ -5,8 +5,7 @@ import { Navigate, Outlet } from "react-router-dom"
 import Loadable from "@/components/Loadable"
 import Dashboard from "@/layout/Dashboard"
 import { useAppSelector } from "@/redux/hooks"
-import { selectAuthenticated, selectRole, selectUserInfo } from "@/redux/slices/authSlice"
-import { Roles } from "@/common/constants/roles"
+import { selectAuthenticated } from "@/redux/slices/authSlice"
 
 // Protected route component
 const ProtectedRoute = () => {
@@ -28,21 +27,9 @@ const Assignment = Loadable(lazy(() => import("@/pages/assignment/AssignmentMana
 const LearningPath = Loadable(lazy(() => import("@/pages/learningPath")))
 const GameFi = Loadable(lazy(() => import("@/pages/gameFi/Index")))
 
-// Component to redirect based on user role
+// Component to redirect to dashboard regardless of user role
 const RoleBasedRedirect = () => {
-  const userRole = useAppSelector(selectRole)
-  const userInfo = useAppSelector(selectUserInfo)
-
-  if (userRole === Roles.TEACHER) {
-    return <Navigate to="/app/tong-quan-tien-do" replace />
-  } else if (userRole === Roles.STUDENT) {
-    // Sử dụng sub từ userInfo làm studentId nếu có
-    // const studentId = userInfo?.sub || "current"
-    const studentId = "C01001"
-    return <Navigate to={`/app/tien-do-hoc-tap/${studentId}`} replace />
-  }
-
-  // Default fallback
+  // Luôn chuyển hướng đến trang chủ, không phân biệt vai trò
   return <DashboardDefault />
 }
 

@@ -19,11 +19,10 @@ const LearningProcess: MenuItem = {
       id: 'learning-process',
       title: 'Tiến độ học tập',
       type: 'item',
-      // url: '/tien-do-hoc-tap/:studentId',
-      url: '/tien-do-hoc-tap/:dtc21h48020103',
+      url: '/tien-do-hoc-tap/:studentId',
       icon: icons.FundOutlined,
       breadcrumbs: true,
-      // roles: [Roles.STUDENT],
+      roles: [Roles.STUDENT],
     }
   ]
 };

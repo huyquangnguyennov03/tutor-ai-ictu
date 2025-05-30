@@ -11,7 +11,7 @@ const HomeRedirect = () => {
   const isAuthenticated = useAppSelector(selectAuthenticated)
   
   if (isAuthenticated) {
-    return <Navigate to="/app" replace />
+    return <Navigate to="/app/trang-chu" replace />
   }
   
   return <Navigate to="/login" replace />

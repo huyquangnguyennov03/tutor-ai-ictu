@@ -1,6 +1,7 @@
 // assets
 import { CommentOutlined  } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
+import { Roles } from "@/common/constants/roles";
 // icons
 const icons = {
   CommentOutlined
@@ -19,7 +20,8 @@ const chat: MenuItem = {
       type: 'item',
       url: '/chat',
       icon: icons.CommentOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      roles: [Roles.TEACHER, Roles.STUDENT]
     }
   ]
 };

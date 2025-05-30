@@ -14,8 +14,7 @@ import Typography from '@mui/material/Typography';
 // project import
 import { handlerActiveItem, useGetMenuMaster } from '@/menu/api';
 import type { MenuChildrenType } from '@/menu/type';
-import { selectRole } from "@/redux/slices/authSlice";
-import { useAppSelector } from "@/redux/hooks"
+import { useAuthStore } from '@/store/auth';
 
 interface NavItemProps {
   item: MenuChildrenType;
@@ -27,7 +26,8 @@ const NavItem: React.FC<NavItemProps> = ({ item, level }) => {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster?.isDashboardDrawerOpened ?? false;
   const openItem = menuMaster?.openedItem ?? '';
-  const userRole = useAppSelector(selectRole);
+  const { user } = useAuthStore();
+  const userRole = user?.role || null;
 
   const { pathname } = useLocation();
   const isSelected = !!matchPath({ path: item.url ?? '', end: false }, pathname) || openItem === item.id;

@@ -10,7 +10,7 @@ const icons = {
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
-const chatTutor: MenuItem = {
+const assignment: MenuItem = {
   id: 'assignment',
   title: '',
   type: 'group',
@@ -22,9 +22,9 @@ const chatTutor: MenuItem = {
       url: '/assignment',
       icon: icons.BookOutlined,
       breadcrumbs: true,
-      // roles: [Roles.STUDENT],
+      roles: [Roles.STUDENT],
     }
   ]
 };
 
-export default chatTutor;
+export default assignment;

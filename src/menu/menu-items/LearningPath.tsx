@@ -22,7 +22,7 @@ const LearningPath: MenuItem = {
       url: '/learning-path',
       icon: icons.ScheduleOutlined,
       breadcrumbs: true,
-      // roles: [Roles.STUDENT],
+      roles: [Roles.STUDENT],
     }
   ]
 };

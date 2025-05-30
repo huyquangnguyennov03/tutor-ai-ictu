@@ -123,7 +123,7 @@ export default function LoginPage() {
         timer: 3000,
         timerProgressBar: true,
       }).then(() => {
-        // navigate("/");
+        navigate("/");
       });
     } catch (err: unknown) {
       console.error("Lỗi đăng nhập:", err);

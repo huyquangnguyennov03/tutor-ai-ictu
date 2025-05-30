@@ -60,17 +60,18 @@ export const fetchAllCoursesAsync = createAsyncThunk(
       // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
       const courses: Course[] = response.data.map((course: any) => ({
         id: course.courseid.toString(),
-        title: course.name || 'Khóa học không tên',
-        description: 'Mô tả khóa học sẽ được cập nhật sau',
+        title: course.coursename || 'Khóa học không tên',
+        description: `Khóa học ${course.coursename} - ${course.semester} (${course.credits} tín chỉ)`,
         thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
         instructor: 'Giảng viên',
-        duration: '8 tuần',
-        level: 'intermediate',
+        duration: '8',
+        level: 'Intermediate',
         totalModules: 10,
-        completedModules: Math.floor(course.completionrate / 10) || 0,
-        isEnrolled: true,
+        completedModules: 0, // Mặc định là 0, sẽ cập nhật sau khi có dữ liệu tiến độ
+        isEnrolled: course.status === 'ACTIVE',
         rating: 4.5,
-        tags: ['programming', 'beginner']
+        tags: ['programming', 'beginner'],
+        icon: getCourseIcon(course.coursename)
       }));
       
       return courses;
@@ -83,6 +84,22 @@ export const fetchAllCoursesAsync = createAsyncThunk(
   }
 );
 
+// Hàm hỗ trợ để xác định icon dựa trên tên khóa học
+function getCourseIcon(courseName: string): 'book' | 'layers' | 'code' | 'school' {
+  const lowerCaseName = courseName.toLowerCase();
+  if (lowerCaseName.includes('c programming')) {
+    return 'code';
+  } else if (lowerCaseName.includes('java')) {
+    return 'layers';
+  } else if (lowerCaseName.includes('python')) {
+    return 'school';
+  } else if (lowerCaseName.includes('web')) {
+    return 'layers';
+  } else {
+    return 'book';
+  }
+}
+
 export const fetchInProgressCoursesAsync = createAsyncThunk(
   'learningPath/fetchInProgressCourses',
   async (_, { rejectWithValue }) => {
@@ -90,22 +107,23 @@ export const fetchInProgressCoursesAsync = createAsyncThunk(
       // Sử dụng API thực tế
       const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`);
       
-      // Lọc các khóa học đang học (giả định: completionrate < 100%)
+      // Lọc các khóa học đang học (status = ACTIVE)
       const inProgressCourses: Course[] = response.data
-        .filter((course: any) => course.completionrate < 100)
+        .filter((course: any) => course.status === 'ACTIVE')
         .map((course: any) => ({
           id: course.courseid.toString(),
-          title: course.name || 'Khóa học không tên',
-          description: 'Mô tả khóa học sẽ được cập nhật sau',
+          title: course.coursename || 'Khóa học không tên',
+          description: `Khóa học ${course.coursename} - ${course.semester} (${course.credits} tín chỉ)`,
           thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
           instructor: 'Giảng viên',
-          duration: '8 tuần',
-          level: 'intermediate',
+          duration: '8',
+          level: 'Intermediate',
           totalModules: 10,
-          completedModules: Math.floor(course.completionrate / 10) || 0,
+          completedModules: 3, // Giả định tiến độ
           isEnrolled: true,
           rating: 4.5,
-          tags: ['programming', 'beginner']
+          tags: ['programming', 'beginner'],
+          icon: getCourseIcon(course.coursename)
         }));
       
       return inProgressCourses;
@@ -130,17 +148,18 @@ export const fetchRecommendedCoursesAsync = createAsyncThunk(
         .slice(0, 3)
         .map((course: any) => ({
           id: course.courseid.toString(),
-          title: course.name || 'Khóa học không tên',
-          description: 'Khóa học được đề xuất dựa trên tiến độ học tập của bạn',
+          title: course.coursename || 'Khóa học không tên',
+          description: `Khóa học ${course.coursename} được đề xuất dựa trên tiến độ học tập của bạn`,
           thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
           instructor: 'Giảng viên',
-          duration: '8 tuần',
-          level: 'intermediate',
+          duration: '8',
+          level: 'Beginner',
           totalModules: 10,
           completedModules: 0,
           isEnrolled: false,
           rating: 4.5,
-          tags: ['programming', 'recommended']
+          tags: ['programming', 'recommended'],
+          icon: getCourseIcon(course.coursename)
         }));
       
       return recommendedCourses;
@@ -167,35 +186,56 @@ export const fetchCourseDetailsAsync = createAsyncThunk(
       
       // Lọc các chương học thuộc khóa học này
       const courseChapters = chaptersResponse.data.filter((chapter: any) => 
-        chapter.courseid.toString() === courseId
+        chapter.courseid?.toString() === courseId
       );
+      
+      // Nếu không có dữ liệu chi tiết khóa học, lấy từ danh sách khóa học
+      const coursesUrl = `${API_BASE_URL}${API_ENDPOINTS.COURSES.GET_COURSES}`;
+      const coursesResponse = await axios.get(coursesUrl);
+      const courseData = coursesResponse.data.find((c: any) => c.courseid.toString() === courseId);
+      
+      if (!courseData) {
+        throw new Error('Không tìm thấy khóa học');
+      }
+      
+      // Tạo danh sách modules mặc định nếu không có dữ liệu chương học
+      const defaultModules = Array.from({ length: 10 }, (_, i) => ({
+        id: `${courseId}-${i+1}`,
+        title: `Bài ${i+1}: Nội dung sẽ được cập nhật`,
+        description: 'Nội dung chi tiết sẽ được cập nhật',
+        duration: 60,
+        isCompleted: i < 3, // Giả định 3 bài đầu đã hoàn thành
+        type: 'video' as 'video' | 'quiz' | 'reading' | 'assignment',
+        contentUrl: `/courses/${courseId}/modules/${i+1}`
+      }));
       
       // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
       const course: Course = {
-        id: response.data.courseid.toString(),
-        title: response.data.name || 'Khóa học không tên',
-        description: 'Mô tả chi tiết khóa học sẽ được cập nhật sau',
+        id: courseData.courseid.toString(),
+        title: courseData.coursename || 'Khóa học không tên',
+        description: `Khóa học ${courseData.coursename} - ${courseData.semester} (${courseData.credits} tín chỉ)`,
         thumbnail: '/images/course-thumbnail.jpg', // Đường dẫn mặc định
         instructor: 'Giảng viên',
-        duration: '8 tuần',
-        level: 'intermediate',
-        totalModules: courseChapters.length,
-        completedModules: Math.floor(response.data.completionrate / 10) || 0,
-        isEnrolled: true,
+        duration: '8',
+        level: 'Intermediate',
+        totalModules: courseChapters.length || 10,
+        completedModules: 3, // Giả định tiến độ
+        isEnrolled: courseData.status === 'ACTIVE',
         rating: 4.5,
         tags: ['programming', 'beginner'],
-        modules: courseChapters.map((chapter: any, index: number) => ({
-          id: chapter.chapterid.toString(),
-          title: chapter.name,
-          duration: `${chapter.estimatedtime} giờ`,
-          isCompleted: (chapter.completionrate || 0) >= 100,
-          content: 'Nội dung chi tiết của chương học sẽ được cập nhật sau'
-        }))
+        icon: getCourseIcon(courseData.coursename),
+        modules: courseChapters.length > 0 
+          ? courseChapters.map((chapter: any, index: number) => ({
+              id: chapter.chapterid.toString(),
+              title: chapter.name || `Bài ${index+1}`,
+              description: chapter.description || 'Nội dung chi tiết sẽ được cập nhật',
+              duration: chapter.estimatedtime || 60,
+              isCompleted: index < 3, // Giả định 3 bài đầu đã hoàn thành
+              type: 'video' as 'video' | 'quiz' | 'reading' | 'assignment',
+              contentUrl: `/courses/${courseId}/modules/${index+1}`
+            }))
+          : defaultModules
       };
-      
-      if (!course) {
-        throw new Error('Không tìm thấy khóa học');
-      }
       
       return course;
     } catch (error) {

@@ -1,6 +1,7 @@
 // assets
 import { HomeOutlined } from '@ant-design/icons';
 import type { MenuItem } from '@/menu/type';
+import { Roles } from "@/common/constants/roles";
 
 // icons
 const icons = {
@@ -20,7 +21,8 @@ const dashboard: MenuItem = {
       type: 'item',
       url: '/trang-chu',
       icon: icons.HomeOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      roles: [Roles.TEACHER, Roles.STUDENT]
     }
   ]
 };
