@@ -22,7 +22,7 @@ const chatTutor: MenuItem = {
       url: '/assignment',
       icon: icons.BookOutlined,
       breadcrumbs: true,
-      roles: [Roles.STUDENT],
+      // roles: [Roles.STUDENT],
     }
   ]
 };

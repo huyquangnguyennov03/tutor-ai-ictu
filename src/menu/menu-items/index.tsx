@@ -12,7 +12,7 @@ import gameFi from "@/menu/menu-items/gameFi"
 
 
 const menuItems = {
-  items: [ chatTutor, LearningProcess, assignment, cdashboard, chat, LearningPath, gameFi]
+  items: [ dashboard, chatTutor, LearningProcess, assignment, cdashboard, chat, LearningPath, gameFi]
 };
 
 export default menuItems;

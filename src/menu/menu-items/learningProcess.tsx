@@ -23,7 +23,7 @@ const LearningProcess: MenuItem = {
       url: '/tien-do-hoc-tap/:dtc21h48020103',
       icon: icons.FundOutlined,
       breadcrumbs: true,
-      roles: [Roles.STUDENT],
+      // roles: [Roles.STUDENT],
     }
   ]
 };

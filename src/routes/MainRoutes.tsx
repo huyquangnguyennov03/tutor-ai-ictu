@@ -34,12 +34,12 @@ const RoleBasedRedirect = () => {
   const userInfo = useAppSelector(selectUserInfo)
 
   if (userRole === Roles.TEACHER) {
-    return <Navigate to="/tong-quan-tien-do" replace />
+    return <Navigate to="/app/tong-quan-tien-do" replace />
   } else if (userRole === Roles.STUDENT) {
     // Sử dụng sub từ userInfo làm studentId nếu có
     // const studentId = userInfo?.sub || "current"
     const studentId = "C01001"
-    return <Navigate to={`/tien-do-hoc-tap/${studentId}`} replace />
+    return <Navigate to={`/app/tien-do-hoc-tap/${studentId}`} replace />
   }
 
   // Default fallback
@@ -49,14 +49,18 @@ const RoleBasedRedirect = () => {
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
-  path: "/",
+  path: "app", // Add a prefix for all protected routes
   element: <ProtectedRoute />,
   children: [
     {
       element: <Dashboard />,
       children: [
         {
-          path: "",
+          path: "", // Default route for /app
+          element: <RoleBasedRedirect />,
+        },
+        {
+          path: "dashboard",
           element: <RoleBasedRedirect />,
         },
         {

@@ -21,7 +21,7 @@ const gameFi: MenuItem = {
       url: '/game-fi',
       icon: icons.ReadOutlined,
       breadcrumbs: false,
-      roles: [Roles.STUDENT],
+      // roles: [Roles.STUDENT],
     }
   ]
 };

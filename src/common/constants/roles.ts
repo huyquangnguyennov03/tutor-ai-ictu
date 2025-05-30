@@ -4,6 +4,6 @@
 // }
 
 export enum Roles {
-  TEACHER = 'app-admin',
-  STUDENT = 'app-user'
+  TEACHER = 'admin',
+  STUDENT = 'user'
 }
