@@ -27,7 +27,6 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import avatar1 from '@/assets/images/users/avatar-1.png';
 
 // Auth
-import { useAuth } from '@/contexts/auth';
 import { logout } from '@/services/auth.service';
 import Gravatar from "react-gravatar"
 import { useAppSelector } from "@/redux/hooks"
@@ -85,7 +84,6 @@ const Profile: React.FC = () => {
 
   const iconBackColorOpen = 'grey.100';
 
-  const { checkAuthentication } = useAuth();
   const { clearUser } = useAuthStore();
   const [userInfo, setUserInfo] = useState<any>({});
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

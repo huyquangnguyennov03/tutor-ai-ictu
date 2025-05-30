@@ -11,7 +11,6 @@ import { HomeOutlined } from "@ant-design/icons"
 // assets
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
-import { useAuth } from "@/contexts/auth"
 
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
@@ -21,7 +20,6 @@ interface ProfileTabProps {
 
 const ProfileTab: React.FC<ProfileTabProps> = ({ handleLogout }) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const { isAuthenticated } = useAuth();
 
   const handleListItemClick = (index: number, path: string) => {
     setSelectedIndex(index);

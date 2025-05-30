@@ -1,4 +1,4 @@
-import { lazy, useTransition, useEffect } from "react"
+import { lazy, useTransition, useEffect, useState } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 
 // project import
@@ -6,26 +6,34 @@ import Loadable from "@/components/Loadable"
 import Dashboard from "@/layout/Dashboard"
 import { useAppSelector } from "@/redux/hooks"
 import { selectAuthenticated } from "@/redux/slices/authSlice"
-import { useAuth } from "@/contexts/auth"
 import Loader from "@/components/Loader"
 
 // Protected route component
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectAuthenticated)
-  const { isAuthChecking } = useAuth()
+  const [isLoading, setIsLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
+  
+  useEffect(() => {
+    // Giả lập thời gian kiểm tra xác thực
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
+    
+    return () => clearTimeout(timer)
+  }, [])
   
   // Sử dụng useEffect để thực hiện chuyển hướng với startTransition
   useEffect(() => {
-    if (!isAuthChecking) {
+    if (!isLoading) {
       startTransition(() => {
         // Không cần làm gì ở đây, chỉ đánh dấu rằng chúng ta đang trong quá trình chuyển đổi
       })
     }
-  }, [isAuthChecking, startTransition])
+  }, [isLoading, startTransition])
   
   // Hiển thị loading trong khi kiểm tra xác thực hoặc đang chuyển đổi
-  if (isAuthChecking || isPending) {
+  if (isLoading || isPending) {
     return <Loader />
   }
   
