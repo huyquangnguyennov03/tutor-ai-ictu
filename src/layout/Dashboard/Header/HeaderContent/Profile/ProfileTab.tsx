@@ -11,7 +11,7 @@ import { HomeOutlined } from "@ant-design/icons"
 // assets
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
-import { useKeycloak } from "@/contexts/keycloak/KeycloakProvider"
+import { useAuth } from "@/contexts/auth"
 
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
@@ -21,7 +21,7 @@ interface ProfileTabProps {
 
 const ProfileTab: React.FC<ProfileTabProps> = ({ handleLogout }) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const { keycloak } = useKeycloak();
+  const { isAuthenticated } = useAuth();
 
   const handleListItemClick = (index: number, path: string) => {
     setSelectedIndex(index);
@@ -42,7 +42,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ handleLogout }) => {
         <ListItemText primary="Trang chủ" />
       </ListItemButton>
 
-      <ListItemButton selected={selectedIndex === 1} onClick={(event) => keycloak?.accountManagement()}>
+      <ListItemButton selected={selectedIndex === 1} onClick={() => window.location.href = '/profile'}>
         <ListItemIcon>
           <UserOutlined />
         </ListItemIcon>

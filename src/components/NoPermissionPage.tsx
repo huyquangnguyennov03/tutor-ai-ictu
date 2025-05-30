@@ -1,9 +1,17 @@
 import React from 'react';
-import keycloak from '@/contexts/keycloak/Keycloak';
+import { logout } from '@/services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 const NoPermissionPage: React.FC = () => {
-    const handleLogout = () => {
-        keycloak.logout();
+    const navigate = useNavigate();
+    
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error('Lỗi khi đăng xuất:', error);
+        }
     };
 
     return (

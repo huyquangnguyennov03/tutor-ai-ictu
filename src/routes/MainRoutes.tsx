@@ -1,13 +1,23 @@
 import { lazy } from "react"
-import { Navigate } from "react-router-dom"
-// import { AuthProvider } from "@/contexts/AuthProvider"
+import { Navigate, Outlet } from "react-router-dom"
 
 // project import
 import Loadable from "@/components/Loadable"
 import Dashboard from "@/layout/Dashboard"
 import { useAppSelector } from "@/redux/hooks"
-import { selectRole, selectUserInfo } from "@/redux/slices/authSlice"
+import { selectAuthenticated, selectRole, selectUserInfo } from "@/redux/slices/authSlice"
 import { Roles } from "@/common/constants/roles"
+
+// Protected route component
+const ProtectedRoute = () => {
+  const isAuthenticated = useAppSelector(selectAuthenticated)
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  
+  return <Outlet />
+}
 
 const DashboardDefault = Loadable(lazy(() => import("@/pages/dashboard/index")))
 const LearningProcess = Loadable(lazy(() => import("@/pages/learningProcess/")))
@@ -40,48 +50,48 @@ const RoleBasedRedirect = () => {
 
 const MainRoutes = {
   path: "/",
-  element: <Dashboard />,
+  element: <ProtectedRoute />,
   children: [
     {
-      path: "/",
-      element: <RoleBasedRedirect />,
-    },
-    {
-      path: "trang-chu",
+      element: <Dashboard />,
       children: [
         {
           path: "",
           element: <RoleBasedRedirect />,
         },
-      ],
-    },
-    {
-      path: "tien-do-hoc-tap/:studentId",
-      element: <LearningProcess />,
-    },
-    {
-      path: "tong-quan-tien-do",
-      element: <CourseProgress />,
-    },
-    {
-      path: "chat",
-      element: <Chat />,
-    },
-    {
-      path: "chat-tutor",
-      element: <ChatTutor />,
-    },
-    {
-      path: "assignment",
-      element: <Assignment/>
-    },
-    {
-      path: "learning-path",
-      element: <LearningPath/>
-    },
-    {
-      path: "game-fi",
-      element: <GameFi/>
+        {
+          path: "trang-chu",
+          element: <RoleBasedRedirect />,
+        },
+        {
+          path: "tien-do-hoc-tap/:studentId",
+          element: <LearningProcess />,
+        },
+        {
+          path: "tong-quan-tien-do",
+          element: <CourseProgress />,
+        },
+        {
+          path: "chat",
+          element: <Chat />,
+        },
+        {
+          path: "chat-tutor",
+          element: <ChatTutor />,
+        },
+        {
+          path: "assignment",
+          element: <Assignment/>
+        },
+        {
+          path: "learning-path",
+          element: <LearningPath/>
+        },
+        {
+          path: "game-fi",
+          element: <GameFi/>
+        }
+      ]
     }
   ],
 }

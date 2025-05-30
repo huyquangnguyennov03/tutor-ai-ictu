@@ -17,17 +17,17 @@ import {Roles} from "@/common/constants/roles";
 const App = () => {
   const isAuthenticated = useAppSelector(selectAuthenticated)
   const userRole = useAppSelector(selectRole)
-
+  
+  // Render router provider regardless of authentication state
+  // The router will handle redirects based on auth state
   return (
-    !isAuthenticated ?
-      <Loader></Loader> :
-          <ThemeCustomization>
-            <SnackbarProvider maxSnack={5} anchorOrigin={{horizontal: 'right', vertical: 'top'}}>
-              <ScrollTop>
-                <RouterProvider router={router}/>
-              </ScrollTop>
-            </SnackbarProvider>
-          </ThemeCustomization>
+    <ThemeCustomization>
+      <SnackbarProvider maxSnack={5} anchorOrigin={{horizontal: 'right', vertical: 'top'}}>
+        <ScrollTop>
+          <RouterProvider router={router}/>
+        </ScrollTop>
+      </SnackbarProvider>
+    </ThemeCustomization>
   )
 }
 

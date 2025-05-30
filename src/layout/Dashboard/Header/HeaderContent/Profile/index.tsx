@@ -26,12 +26,14 @@ import Avatar from '@/components/@extended/Avatar';
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import avatar1 from '@/assets/images/users/avatar-1.png';
 
-// Keycloak
-import { useKeycloak } from '@/contexts/keycloak/KeycloakProvider';
+// Auth
+import { useAuth } from '@/contexts/auth';
+import { logout } from '@/services/auth.service';
 import Gravatar from "react-gravatar"
 import { useAppSelector } from "@/redux/hooks"
 import { selectUserInfo } from "@/redux/slices/authSlice"
 import useMediaQuery from "@mui/material/useMediaQuery"
+import { useAuthStore } from '@/store/auth';
 
 
 // TabPanel component type
@@ -83,12 +85,19 @@ const Profile: React.FC = () => {
 
   const iconBackColorOpen = 'grey.100';
 
-  const { keycloak } = useKeycloak();
+  const { checkAuthentication } = useAuth();
+  const { clearUser } = useAuthStore();
   const [userInfo, setUserInfo] = useState<any>({});
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleLogout = () => {
-    keycloak?.logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      clearUser();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Lỗi khi đăng xuất:', error);
+    }
   };
 
   const userData = useAppSelector(selectUserInfo);
