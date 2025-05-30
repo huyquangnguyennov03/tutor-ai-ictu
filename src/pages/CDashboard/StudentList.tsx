@@ -49,14 +49,6 @@ const StudentList: React.FC = () => {
   const status = useSelector(selectStatus);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [displayedStudents, setDisplayedStudents] = useState<Student[]>([]);
-
-  // Set up displayed students - limited to 5 for the main list
-  useEffect(() => {
-    if (students && students.length > 0) {
-      setDisplayedStudents(students.slice(0, 5));
-    }
-  }, [students]);
 
   // Handle sort change
   const handleSortChange = (event: SelectChangeEvent) => {
@@ -72,7 +64,9 @@ const StudentList: React.FC = () => {
 
   // Handle search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Lưu giá trị gốc (bao gồm khoảng trắng) để hiển thị trong ô input
     setSearchTerm(event.target.value);
+    // Việc trim() sẽ được thực hiện khi lọc, không phải khi lưu giá trị
   };
 
   // Navigate to student details page with enhanced information
@@ -97,10 +91,12 @@ const StudentList: React.FC = () => {
   };
 
   // Filter students based on search term - safely check for undefined
+  // Kết quả này được sử dụng cho cả danh sách chính và dialog
+  const trimmedSearchTerm = searchTerm.trim(); // Loại bỏ khoảng trắng thừa
   const filteredStudents = students && students.length > 0
     ? students.filter(student =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.mssv.includes(searchTerm)
+      student.name.toLowerCase().includes(trimmedSearchTerm.toLowerCase()) ||
+      student.mssv.includes(trimmedSearchTerm)
     )
     : [];
 
@@ -267,24 +263,26 @@ const StudentList: React.FC = () => {
       </Grid>
 
       {/* Main student table - limited to 5 students */}
-      {renderStudentTable(displayedStudents)}
+      {renderStudentTable(filteredStudents.slice(0, 5))}
 
-      {/* "Xem Thêm" Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenDialog}
-          sx={{
-            minWidth: 120,
-            borderRadius: 20,
-            textTransform: 'none',
-            fontSize: '1rem'
-          }}
-        >
-          Xem thêm
-        </Button>
-      </Box>
+      {/* "Xem Thêm" Button - chỉ hiển thị khi có nhiều hơn 5 sinh viên */}
+      {filteredStudents.length > 5 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenDialog}
+            sx={{
+              minWidth: 120,
+              borderRadius: 20,
+              textTransform: 'none',
+              fontSize: '1rem'
+            }}
+          >
+            Xem thêm {filteredStudents.length - 5} sinh viên
+          </Button>
+        </Box>
+      )}
 
       {/* Full Student List Dialog */}
       <Dialog

@@ -154,6 +154,7 @@ export interface StudentNeedingSupport {
 
 export interface TeacherDashboardState {
   students: Student[];
+  _originalStudents?: Student[]; // Lưu trữ danh sách sinh viên gốc cho chức năng lọc
   chapters: Chapter[];
   commonErrors: CommonError[];
   assignments: Assignment[];
@@ -339,10 +340,20 @@ const teacherDashboardSlice = createSlice({
       }
     },
     filterStudents(state, action: PayloadAction<'all' | 'active' | 'inactive'>) {
-      if (action.payload === 'active') {
-        state.students = state.students.filter(student => student.progress > 50);
+      // Lưu trữ danh sách sinh viên gốc nếu chưa có
+      if (!state._originalStudents) {
+        state._originalStudents = [...state.students];
+      }
+      
+      if (action.payload === 'all') {
+        // Khôi phục danh sách gốc
+        state.students = [...state._originalStudents];
+      } else if (action.payload === 'active') {
+        // Lọc sinh viên tích cực (tiến độ > 50%)
+        state.students = state._originalStudents.filter(student => student.progress > 50);
       } else if (action.payload === 'inactive') {
-        state.students = state.students.filter(student => student.progress <= 50);
+        // Lọc sinh viên không tích cực (tiến độ <= 50%)
+        state.students = state._originalStudents.filter(student => student.progress <= 50);
       }
     }
   },
@@ -354,6 +365,8 @@ const teacherDashboardSlice = createSlice({
       .addCase(fetchDashboardData.fulfilled, (state, action: PayloadAction<any>) => {
         state.status = 'succeeded';
         state.students = action.payload.students;
+        // Lưu trữ danh sách sinh viên gốc để sử dụng cho chức năng lọc
+        state._originalStudents = [...action.payload.students];
         state.chapters = action.payload.chapters;
         state.commonErrors = action.payload.commonErrors;
         state.assignments = action.payload.assignments;
