@@ -16,7 +16,6 @@ const ImprovementSuggestions: React.FC = () => {
     );
   }
 
-  // Kiểm tra suggestions có tồn tại và có phải là mảng không
   if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
     return (
       <Paper sx={{ mb: 3, p: 3 }}>
@@ -30,7 +29,6 @@ const ImprovementSuggestions: React.FC = () => {
       <Box sx={{ p: 2, bgcolor: '#1976d2', color: 'white' }}>
         <Typography variant="h6">Đề Xuất Cải Thiện</Typography>
       </Box>
-
       <Box sx={{ p: 2 }}>
         {suggestions.map((suggestion) => (
           <Alert

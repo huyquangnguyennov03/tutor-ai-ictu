@@ -30,7 +30,7 @@ export interface StudentInfo {
   studentId: string;
   courseLevel: string;
   updateDate: string;
-  class: string; // Thêm class để lưu thông tin lớp
+  class: string;
 }
 
 export interface SummaryStatsData {
@@ -60,15 +60,6 @@ const initialState: StudentProgressState = {
   data: null,
   status: 'idle',
   error: null
-};
-
-// Ánh xạ lớp sang courseId
-const courseIdMap: { [key: string]: string } = {
-  C01: '1',
-  C02: '2',
-  J01: '3',
-  P01: '4',
-  W01: '5'
 };
 
 export const fetchStudentProgress = createAsyncThunk(
@@ -102,62 +93,66 @@ export const fetchStudentProgress = createAsyncThunk(
       const predictionUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.PREDICT_INTERVENTION.replace(':studentid', student.studentid.toString())}`;
       const predictionResponse = await axios.get(predictionUrl);
 
-      // Lấy chi tiết các chương học với courseId động
+      // Lấy chi tiết các chương học
       const chaptersUrl = `${API_BASE_URL}${API_ENDPOINTS.CHAPTERS.GET_CHAPTER_DETAILS
         .replace(':studentid', student.studentid.toString())
         .replace(':courseid', courseId)}`;
       const chaptersResponse = await axios.get(chaptersUrl);
 
-      // Chuyển đổi dữ liệu từ API thành định dạng phù hợp với ứng dụng
+      // Lấy danh sách cảnh báo từ Warning
+      const warningsResponse = await axios.get(`${API_BASE_URL}/api/warnings`);
+      const studentWarnings = warningsResponse.data.filter((w: any) => w.studentid.toString() === student.studentid.toString());
+
+      // Chuyển đổi dữ liệu từ API
       const studentInfo: StudentInfo = {
         name: student.name,
         studentId: student.mssv,
-        courseLevel: 'Trung cấp', // Giả định
+        courseLevel: 'Trung cấp',
         updateDate: progressResponse.data[0]?.lastupdated || new Date().toISOString().split('T')[0],
-        class: student.class || 'Unknown' // Thêm thông tin lớp
+        class: student.class || 'Unknown'
       };
 
-      // Kiểm tra và xử lý dữ liệu chapters an toàn
-      const chapters: ChapterData[] = chaptersResponse.data && chaptersResponse.data.chapters 
-        ? chaptersResponse.data.chapters.map((chapter: any, index: number) => ({
-            id: chapter.chapterid,
-            title: chapter.name || `Chương ${index + 1}`,
-            progress: chapter.completion_rate || 0,
-            quizScore: `${chapter.average_score || 0}/10`,
-            exercisesCompleted: `${Math.floor((chapter.completion_rate || 0) / 10)}/${Math.floor((chapter.completion_rate || 0) / 10) + 2}`
-          }))
+      const chapters: ChapterData[] = chaptersResponse.data.courses.map((chapter: any) => ({
+        id: chapter.chapterid,
+        title: chapter.name,
+        progress: chapter.completion_rate || 0,
+        quizScore: `${chapter.average_score || 0}/10`,
+        exercisesCompleted: `${Math.floor((chapter.completion_rate || 0) / 10)}/${Math.floor((chapter.completion_rate || 0) / 10) + 2}`
+      }));
+
+      const errors: ErrorData[] = studentWarnings.length > 0
+        ? studentWarnings.reduce((acc: ErrorData[], warning: any) => {
+          const existingError = acc.find(err => err.name === warning.message);
+          if (existingError) {
+            existingError.count += 1;
+          } else {
+            acc.push({
+              name: warning.message,
+              count: 1,
+              percentage: (1 / studentWarnings.length) * 100
+            });
+          }
+          return acc;
+        }, [])
         : [];
 
-      // Kiểm tra và xử lý dữ liệu bloom_assessments an toàn
-      const errors: ErrorData[] = reportResponse.data && reportResponse.data.bloom_assessments 
-        ? reportResponse.data.bloom_assessments.map((assessment: any, index: number) => ({
-            name: `Lỗi ${assessment.bloomlevel || `Loại ${index + 1}`}`,
-            count: Math.floor(Math.random() * 10) + 1, // Giả định
-            percentage: Math.floor(Math.random() * 30) + 10 // Giả định
-          }))
-        : [];
-
-      // Kiểm tra và xử lý dữ liệu đề xuất an toàn
-      const suggestions: Suggestion[] = [];
-      
-      if (predictionResponse.data && predictionResponse.data.recommendation) {
-        suggestions.push({
+      const suggestions: Suggestion[] = predictionResponse.data && predictionResponse.data.recommendation
+        ? [{
           id: 1,
           title: 'Đề xuất học tập',
           content: predictionResponse.data.recommendation,
           type: predictionResponse.data.risk_level === 'An toàn' ? 'success' :
             predictionResponse.data.risk_level === 'Cần cải thiện' ? 'warning' : 'error'
-        });
-      }
+        }]
+        : [];
 
-      // Xử lý dữ liệu thống kê tổng hợp an toàn
       const summaryStats: SummaryStatsData = {
-        totalLearningTime: `${Math.floor(Math.random() * 100) + 20} giờ`, // Giả định
-        successfulCompilations: Math.floor(Math.random() * 100) + 50, // Giả định
-        failedCompilations: Math.floor(Math.random() * 30) + 10, // Giả định
-        successRate: `${progressResponse.data && progressResponse.data[0]?.completionrate || 75}%`,
-        dailyAverageTime: `${Math.floor(Math.random() * 3) + 1} giờ`, // Giả định
-        mostCommonError: errors && errors.length > 0 ? errors[0].name : 'Không có lỗi'
+        totalLearningTime: reportResponse.data.progress[0]?.progressrate ? `${Math.floor(reportResponse.data.progress[0].progressrate)} giờ` : '0 giờ',
+        successfulCompilations: reportResponse.data.progress[0]?.completionrate ? Math.floor(reportResponse.data.progress[0].completionrate) : 0,
+        failedCompilations: reportResponse.data.warnings.length || 0,
+        successRate: `${reportResponse.data.progress[0]?.completionrate || 0}%`,
+        dailyAverageTime: '2 giờ', // Có thể tính từ dữ liệu thực tế nếu có
+        mostCommonError: errors.length > 0 ? errors[0].name : 'Không có lỗi'
       };
 
       return {
@@ -174,7 +169,6 @@ export const fetchStudentProgress = createAsyncThunk(
   }
 );
 
-// Tạo slice (giữ nguyên phần còn lại)
 const studentProgressSlice = createSlice({
   name: 'studentProgress',
   initialState,

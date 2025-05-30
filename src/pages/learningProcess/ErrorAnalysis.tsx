@@ -6,10 +6,10 @@ import { selectErrors, selectStatus } from '@/redux/slices/studentProgressSlice'
 // Define the interface for ProgressBar props
 interface ProgressBarProps {
   progress: number;
-  color: 'success' | 'warning' | 'error' | 'info' | 'primary'; // Define the allowed color types
+  color: 'success' | 'warning' | 'error' | 'info' | 'primary';
 }
 
-// Custom ProgressBar component with explicit prop types
+// Custom ProgressBar component
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress, color }) => {
   return (
     <Box
@@ -53,7 +53,6 @@ const ErrorAnalysis: React.FC = () => {
     );
   }
 
-  // Kiểm tra errors có tồn tại và có phải là mảng không
   if (!errors || !Array.isArray(errors) || errors.length === 0) {
     return (
       <Paper sx={{ mb: 3, p: 3 }}>
@@ -62,34 +61,22 @@ const ErrorAnalysis: React.FC = () => {
     );
   }
 
-  // Find the maximum error count for scaling - đảm bảo an toàn
-  const maxErrorCount = errors.length > 0 
-    ? Math.max(...errors.map(error => error.count || 0)) 
-    : 1; // Tránh chia cho 0
+  const maxErrorCount = errors.length > 0 ? Math.max(...errors.map(error => error.count || 0)) : 1;
 
   return (
     <Paper sx={{ mb: 3 }}>
       <Box sx={{ p: 2, bgcolor: '#1976d2', color: 'white' }}>
         <Typography variant="h6">Phân Tích Lỗi Biên Dịch</Typography>
       </Box>
-
       <Box sx={{ p: 2 }}>
         <Typography variant="subtitle1" sx={{ mb: 2 }}>Các Lỗi Phổ Biến</Typography>
-
         {errors.map((error, index) => (
           <Box key={index} sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2" color="error">
-                {error.name}
-              </Typography>
-              <Typography variant="body2">
-                {error.count} lần
-              </Typography>
+              <Typography variant="body2" color="error">{error.name}</Typography>
+              <Typography variant="body2">{error.count} lần</Typography>
             </Box>
-            <ProgressBar
-              progress={(error.count / maxErrorCount) * 100}
-              color="info" // Or you can dynamically change this based on the error type
-            />
+            <ProgressBar progress={(error.count / maxErrorCount) * 100} color="info" />
           </Box>
         ))}
       </Box>
