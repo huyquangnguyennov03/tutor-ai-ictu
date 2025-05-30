@@ -8,6 +8,7 @@ import { Roles } from '@/common/constants/roles';
 interface AuthContextType {
   isAuthenticated: boolean;
   isServerAvailable: boolean;
+  isAuthChecking: boolean;
   checkAuthentication: () => Promise<boolean>;
 }
 
@@ -21,8 +22,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { user, isLoggedIn, setUser } = useAuthStore();
   const dispatch = useAppDispatch();
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
   const checkAuthentication = async (): Promise<boolean> => {
+    setIsAuthChecking(true);
     try {
       const response = await checkAuth();
       setIsServerAvailable(true); // Server đã phản hồi thành công
@@ -53,8 +56,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
           saleUpToken: null,
         }));
+        setIsAuthChecking(false);
         return true;
       }
+      setIsAuthChecking(false);
       return false;
     } catch (error: any) {
       console.error('Lỗi khi kiểm tra xác thực:', error);
@@ -65,11 +70,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.warn('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc server.');
       }
       
+      setIsAuthChecking(false);
       return false;
     }
   };
 
   useEffect(() => {
+    // Kiểm tra xác thực khi component được mount
     checkAuthentication();
   }, []);
 
@@ -77,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={{ 
       isAuthenticated: isLoggedIn, 
       isServerAvailable,
+      isAuthChecking,
       checkAuthentication 
     }}>
       {children}
