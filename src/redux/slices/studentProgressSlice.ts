@@ -74,26 +74,20 @@ export const fetchStudentProgress = createAsyncThunk(
         return rejectWithValue(`Không tìm thấy thông tin sinh viên với MSSV: ${studentId}`);
       }
 
+      // Lấy báo cáo chi tiết của sinh viên (bao gồm suggestions)
+      const reportUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENT_REPORT.replace(':studentid', student.studentid.toString())}`;
+      const reportResponse = await axios.get(reportUrl);
+
+      if (!reportResponse.data) {
+        return rejectWithValue(`Không tìm thấy dữ liệu cho sinh viên ${student.mssv}`);
+      }
+
       // Lấy tiến độ học tập của sinh viên
       const progressUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENT_PROGRESS.replace(':studentid', student.studentid.toString())}`;
       const progressResponse = await axios.get(progressUrl);
 
-      if (!progressResponse.data || progressResponse.data.length === 0) {
-        return rejectWithValue(`Không tìm thấy tiến độ học tập cho sinh viên ${student.mssv}`);
-      }
-
-      // Lấy courseId từ progress
-      const courseId = progressResponse.data[0].courseid.toString();
-
-      // Lấy báo cáo chi tiết của sinh viên
-      const reportUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.GET_STUDENT_REPORT.replace(':studentid', student.studentid.toString())}`;
-      const reportResponse = await axios.get(reportUrl);
-
-      // Lấy dự đoán và đề xuất can thiệp
-      const predictionUrl = `${API_BASE_URL}${API_ENDPOINTS.STUDENTS.PREDICT_INTERVENTION.replace(':studentid', student.studentid.toString())}`;
-      const predictionResponse = await axios.get(predictionUrl);
-
       // Lấy chi tiết các chương học
+      const courseId = progressResponse.data[0]?.courseid.toString() || '';
       const chaptersUrl = `${API_BASE_URL}${API_ENDPOINTS.CHAPTERS.GET_CHAPTER_DETAILS
         .replace(':studentid', student.studentid.toString())
         .replace(':courseid', courseId)}`;
@@ -112,13 +106,15 @@ export const fetchStudentProgress = createAsyncThunk(
         class: student.class || 'Unknown'
       };
 
-      const chapters: ChapterData[] = chaptersResponse.data.courses.map((chapter: any) => ({
-        id: chapter.chapterid,
-        title: chapter.name,
-        progress: chapter.completion_rate || 0,
-        quizScore: `${chapter.average_score || 0}/10`,
-        exercisesCompleted: `${Math.floor((chapter.completion_rate || 0) / 10)}/${Math.floor((chapter.completion_rate || 0) / 10) + 2}`
-      }));
+      const chapters: ChapterData[] = chaptersResponse.data && chaptersResponse.data.chapters && Array.isArray(chaptersResponse.data.chapters)
+        ? chaptersResponse.data.chapters.map((chapter: any) => ({
+          id: chapter.chapterid || 0,
+          title: chapter.name || 'Chương không xác định',
+          progress: chapter.completion_rate || 0,
+          quizScore: `${chapter.average_score || 0}/10`,
+          exercisesCompleted: `${Math.floor((chapter.completion_rate || 0) / 10)}/${Math.floor((chapter.completion_rate || 0) / 10) + 2}`
+        }))
+        : [];
 
       const errors: ErrorData[] = studentWarnings.length > 0
         ? studentWarnings.reduce((acc: ErrorData[], warning: any) => {
@@ -136,22 +132,22 @@ export const fetchStudentProgress = createAsyncThunk(
         }, [])
         : [];
 
-      const suggestions: Suggestion[] = predictionResponse.data && predictionResponse.data.recommendation
-        ? [{
-          id: 1,
-          title: 'Đề xuất học tập',
-          content: predictionResponse.data.recommendation,
-          type: predictionResponse.data.risk_level === 'An toàn' ? 'success' :
-            predictionResponse.data.risk_level === 'Cần cải thiện' ? 'warning' : 'error'
-        }]
-        : [];
+      const suggestions: Suggestion[] = reportResponse.data.suggestions || [];
 
       const summaryStats: SummaryStatsData = {
-        totalLearningTime: reportResponse.data.progress[0]?.progressrate ? `${Math.floor(reportResponse.data.progress[0].progressrate)} giờ` : '0 giờ',
-        successfulCompilations: reportResponse.data.progress[0]?.completionrate ? Math.floor(reportResponse.data.progress[0].completionrate) : 0,
-        failedCompilations: reportResponse.data.warnings.length || 0,
-        successRate: `${reportResponse.data.progress[0]?.completionrate || 0}%`,
-        dailyAverageTime: '2 giờ', // Có thể tính từ dữ liệu thực tế nếu có
+        totalLearningTime: reportResponse.data.progress && reportResponse.data.progress[0]?.progressrate
+          ? `${Math.floor(reportResponse.data.progress[0].progressrate)} giờ`
+          : '0 giờ',
+        successfulCompilations: reportResponse.data.progress && reportResponse.data.progress[0]?.completionrate
+          ? Math.floor(reportResponse.data.progress[0].completionrate)
+          : 0,
+        failedCompilations: reportResponse.data.warnings && Array.isArray(reportResponse.data.warnings)
+          ? reportResponse.data.warnings.length
+          : 0,
+        successRate: reportResponse.data.progress && reportResponse.data.progress[0]?.completionrate
+          ? `${reportResponse.data.progress[0].completionrate}%`
+          : '0%',
+        dailyAverageTime: '2 giờ',
         mostCommonError: errors.length > 0 ? errors[0].name : 'Không có lỗi'
       };
 
@@ -163,7 +159,15 @@ export const fetchStudentProgress = createAsyncThunk(
         suggestions
       };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || 'Đã xảy ra lỗi khi tải dữ liệu';
+      console.error('Error in fetchStudentProgress:', error);
+      let errorMessage = 'Đã xảy ra lỗi khi tải dữ liệu';
+      if (error.response) {
+        errorMessage = error.response.data?.error || `Lỗi server: ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = 'Không thể kết nối đến server';
+      } else {
+        errorMessage = error.message || 'Lỗi không xác định';
+      }
       return rejectWithValue(errorMessage);
     }
   }

@@ -30,16 +30,29 @@ const ImprovementSuggestions: React.FC = () => {
         <Typography variant="h6">Đề Xuất Cải Thiện</Typography>
       </Box>
       <Box sx={{ p: 2 }}>
-        {suggestions.map((suggestion) => (
-          <Alert
-            key={suggestion.id}
-            severity={suggestion.type}
-            sx={{ mb: 2 }}
-          >
-            <Typography variant="subtitle2">{suggestion.title}</Typography>
-            <Typography variant="body2">{suggestion.content}</Typography>
-          </Alert>
-        ))}
+        {Array.isArray(suggestions) && suggestions.map((suggestion) => {
+          // Kiểm tra suggestion có đầy đủ dữ liệu không
+          if (!suggestion || typeof suggestion !== 'object') {
+            return null;
+          }
+          
+          // Xác định severity hợp lệ
+          const validSeverities = ['success', 'info', 'warning', 'error'];
+          const severity = suggestion.type && validSeverities.includes(suggestion.type) 
+            ? suggestion.type 
+            : 'info';
+          
+          return (
+            <Alert
+              key={suggestion.id || 'unknown'}
+              severity={severity}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="subtitle2">{suggestion.title || 'Đề xuất'}</Typography>
+              <Typography variant="body2">{suggestion.content || 'Không có nội dung'}</Typography>
+            </Alert>
+          );
+        })}
       </Box>
     </Paper>
   );

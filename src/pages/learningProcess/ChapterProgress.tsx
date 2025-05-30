@@ -97,37 +97,44 @@ const ChapterProgress: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {chapters.map((chapter) => (
-              <TableRow key={chapter.id}>
-                <TableCell>{chapter.title}</TableCell>
-                <TableCell sx={{ width: '40%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ width: '90%', mr: 1 }}>
-                      <ProgressBar
-                        progress={chapter.progress}
-                        color={getProgressColor(chapter.progress)}
-                      />
+            {Array.isArray(chapters) && chapters.map((chapter) => {
+              // Kiểm tra chapter có đầy đủ dữ liệu không
+              if (!chapter || typeof chapter !== 'object') {
+                return null;
+              }
+              
+              return (
+                <TableRow key={chapter.id || 'unknown'}>
+                  <TableCell>{chapter.title || 'Chương không xác định'}</TableCell>
+                  <TableCell sx={{ width: '40%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ width: '90%', mr: 1 }}>
+                        <ProgressBar
+                          progress={typeof chapter.progress === 'number' ? chapter.progress : 0}
+                          color={getProgressColor(typeof chapter.progress === 'number' ? chapter.progress : 0)}
+                        />
+                      </Box>
+                      <Typography variant="body2">{typeof chapter.progress === 'number' ? chapter.progress : 0}%</Typography>
                     </Box>
-                    <Typography variant="body2">{chapter.progress}%</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box
-                    sx={{
-                      bgcolor: getScoreBadgeColor(chapter.quizScore),
-                      color: 'white',
-                      borderRadius: 5,
-                      display: 'inline-block',
-                      px: 1.5,
-                      py: 0.5
-                    }}
-                  >
-                    {chapter.quizScore}
-                  </Box>
-                </TableCell>
-                <TableCell>{chapter.exercisesCompleted}</TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell>
+                    <Box
+                      sx={{
+                        bgcolor: getScoreBadgeColor(chapter.quizScore || '-'),
+                        color: 'white',
+                        borderRadius: 5,
+                        display: 'inline-block',
+                        px: 1.5,
+                        py: 0.5
+                      }}
+                    >
+                      {chapter.quizScore || '-'}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{chapter.exercisesCompleted || '-'}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>

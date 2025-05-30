@@ -70,15 +70,25 @@ const ErrorAnalysis: React.FC = () => {
       </Box>
       <Box sx={{ p: 2 }}>
         <Typography variant="subtitle1" sx={{ mb: 2 }}>Các Lỗi Phổ Biến</Typography>
-        {errors.map((error, index) => (
-          <Box key={index} sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2" color="error">{error.name}</Typography>
-              <Typography variant="body2">{error.count} lần</Typography>
+        {Array.isArray(errors) && errors.map((error, index) => {
+          // Kiểm tra error có đầy đủ dữ liệu không
+          if (!error || typeof error !== 'object') {
+            return null;
+          }
+          
+          const errorCount = typeof error.count === 'number' ? error.count : 0;
+          const progressPercentage = maxErrorCount > 0 ? (errorCount / maxErrorCount) * 100 : 0;
+          
+          return (
+            <Box key={index} sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography variant="body2" color="error">{error.name || 'Lỗi không xác định'}</Typography>
+                <Typography variant="body2">{errorCount} lần</Typography>
+              </Box>
+              <ProgressBar progress={progressPercentage} color="info" />
             </Box>
-            <ProgressBar progress={(error.count / maxErrorCount) * 100} color="info" />
-          </Box>
-        ))}
+          );
+        })}
       </Box>
     </Paper>
   );
