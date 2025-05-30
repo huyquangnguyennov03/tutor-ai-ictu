@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
-  Paper, Grid, Typography, Button, Box, Tooltip, useMediaQuery, useTheme
+  Paper, Grid, Typography, Button, Box, Tooltip, useMediaQuery, useTheme,
+  Snackbar, Alert
 } from '@mui/material';
 import ClassIcon from '@mui/icons-material/Class';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -13,11 +14,20 @@ import {
   selectCurrentCourse,
   selectCurrentSemester,
   selectCourseOptions,
-  selectSemesterOptions
+  selectSemesterOptions,
+  selectStudents,
+  selectChapters,
+  selectAssignments,
+  selectWarnings
 } from '@/redux/slices/teacherDashboardSlice';
+import { exportService } from '@/services/exportService';
 
 const CDashboardHeader = () => {
   const [openDialog, setOpenDialog] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -28,6 +38,10 @@ const CDashboardHeader = () => {
   const currentSemester = useSelector(selectCurrentSemester);
   const courseOptions = useSelector(selectCourseOptions);
   const semesterOptions = useSelector(selectSemesterOptions);
+  const students = useSelector(selectStudents);
+  const chapters = useSelector(selectChapters);
+  const assignments = useSelector(selectAssignments);
+  const warnings = useSelector(selectWarnings);
 
   // Find current course and semester names
   const currentCourseObj = courseOptions.find(course => course.id === currentCourse);
@@ -39,6 +53,52 @@ const CDashboardHeader = () => {
   const handleOpenDialog = () => setOpenDialog(true);
   const handleCloseDialog = () => setOpenDialog(false);
   const handleBackToDashboard = () => navigate('/trang-chu');
+  
+  /**
+   * Đóng thông báo snackbar
+   */
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
+  /**
+   * Xuất dữ liệu dashboard sang file Excel
+   */
+  const handleExportToExcel = () => {
+    try {
+      setIsExporting(true);
+      
+      // Tạo tên file dựa trên thông tin lớp học và thời gian hiện tại
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+      const fileName = `bao-cao-lop-${currentCourse}-${timestamp}.xlsx`;
+      
+      // Xuất dữ liệu sang Excel
+      exportService.exportToExcel({
+        students,
+        chapters,
+        assignments,
+        warnings,
+        classInfo,
+        currentCourse,
+        currentSemester,
+        courseOptions,
+        semesterOptions
+      }, fileName);
+      
+      // Hiển thị thông báo thành công
+      setSnackbarMessage(`Đã xuất báo cáo thành công: ${fileName}`);
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setIsExporting(false);
+    } catch (error) {
+      console.error('Lỗi khi xuất file Excel:', error);
+      // Hiển thị thông báo lỗi
+      setSnackbarMessage('Đã xảy ra lỗi khi xuất báo cáo. Vui lòng thử lại sau.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      setIsExporting(false);
+    }
+  };
 
   return (
     <Box sx={{ mb: 4 }}>
@@ -111,14 +171,16 @@ const CDashboardHeader = () => {
             )}
           </Grid>
           <Grid item>
-            <Tooltip title="Xuất báo cáo">
+            <Tooltip title="Xuất báo cáo Excel">
               <Button
                 variant="contained"
                 color="success"
                 size="small"
                 startIcon={!isMobile && <FileDownloadIcon />}
+                onClick={handleExportToExcel}
+                disabled={isExporting}
               >
-                {isMobile ? <FileDownloadIcon /> : 'Xuất báo cáo'}
+                {isMobile ? <FileDownloadIcon /> : isExporting ? 'Đang xuất...' : 'Xuất báo cáo'}
               </Button>
             </Tooltip>
           </Grid>
@@ -127,6 +189,23 @@ const CDashboardHeader = () => {
 
       {/* Dialog chọn lớp */}
       <CDashboardDialog open={openDialog} onClose={handleCloseDialog} />
+
+      {/* Thông báo kết quả xuất Excel */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
