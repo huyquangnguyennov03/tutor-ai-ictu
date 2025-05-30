@@ -1,4 +1,4 @@
-import { lazy } from "react"
+import { lazy, useTransition, useEffect } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 
 // project import
@@ -13,9 +13,19 @@ import Loader from "@/components/Loader"
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectAuthenticated)
   const { isAuthChecking } = useAuth()
+  const [isPending, startTransition] = useTransition()
   
-  // Hiển thị loading trong khi kiểm tra xác thực
-  if (isAuthChecking) {
+  // Sử dụng useEffect để thực hiện chuyển hướng với startTransition
+  useEffect(() => {
+    if (!isAuthChecking) {
+      startTransition(() => {
+        // Không cần làm gì ở đây, chỉ đánh dấu rằng chúng ta đang trong quá trình chuyển đổi
+      })
+    }
+  }, [isAuthChecking, startTransition])
+  
+  // Hiển thị loading trong khi kiểm tra xác thực hoặc đang chuyển đổi
+  if (isAuthChecking || isPending) {
     return <Loader />
   }
   

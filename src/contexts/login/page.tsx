@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -64,6 +64,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isServerDown, setIsServerDown] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -120,10 +121,16 @@ export default function LoginPage() {
         title: "Thông báo",
         text: "Đăng nhập thành công",
         icon: "success",
-        timer: 3000,
+        timer: 2000,
         timerProgressBar: true,
       }).then(() => {
-        navigate("/");
+        // Sử dụng startTransition để tránh lỗi suspended component
+        startTransition(() => {
+          // Thêm một timeout nhỏ để đảm bảo các thay đổi trạng thái đã được áp dụng
+          setTimeout(() => {
+            navigate("/app/trang-chu");
+          }, 100);
+        });
       });
     } catch (err: unknown) {
       console.error("Lỗi đăng nhập:", err);
