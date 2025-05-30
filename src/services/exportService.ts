@@ -6,7 +6,11 @@ import {
   StudentWarning, 
   ClassInfo,
   CourseOption,
-  SemesterOption
+  SemesterOption,
+  CommonError,
+  TopStudent,
+  StudentNeedingSupport,
+  AssignmentSubmission
 } from '@/redux/slices/teacherDashboardSlice';
 
 /**
@@ -29,6 +33,10 @@ export const exportService = {
       currentSemester: string;
       courseOptions: CourseOption[];
       semesterOptions: SemesterOption[];
+      commonErrors: CommonError[];
+      topStudents: TopStudent[];
+      studentsNeedingSupport: StudentNeedingSupport[];
+      assignmentSubmission: AssignmentSubmission | null;
     },
     fileName: string = 'dashboard-export.xlsx'
   ) => {
@@ -142,6 +150,117 @@ export const exportService = {
 
       const warningsSheet = XLSX.utils.aoa_to_sheet(warningsData);
       XLSX.utils.book_append_sheet(workbook, warningsSheet, 'Cảnh báo & Nhắc nhở');
+    }
+
+    // Add common errors sheet
+    if (data.commonErrors && data.commonErrors.length > 0) {
+      const errorsData = [
+        ['Loại lỗi', 'Số lần xuất hiện', 'Số SV gặp phải', 'Chương liên quan']
+      ];
+
+      data.commonErrors.forEach(error => {
+        errorsData.push([
+          error.type,
+          error.occurrences,
+          error.studentsAffected,
+          error.relatedChapters
+        ]);
+      });
+
+      const errorsSheet = XLSX.utils.aoa_to_sheet(errorsData);
+      XLSX.utils.book_append_sheet(workbook, errorsSheet, 'Lỗi biên dịch phổ biến');
+    }
+
+    // Add top students sheet
+    if (data.topStudents && data.topStudents.length > 0) {
+      const topStudentsData = [
+        ['MSSV', 'Tên sinh viên', 'Điểm', 'Tiến độ (%)']
+      ];
+
+      data.topStudents.forEach(student => {
+        topStudentsData.push([
+          student.mssv,
+          student.name,
+          student.score,
+          student.progress
+        ]);
+      });
+
+      const topStudentsSheet = XLSX.utils.aoa_to_sheet(topStudentsData);
+      XLSX.utils.book_append_sheet(workbook, topStudentsSheet, 'Sinh viên xuất sắc');
+    }
+
+    // Add students needing support sheet
+    if (data.studentsNeedingSupport && data.studentsNeedingSupport.length > 0) {
+      const supportStudentsData = [
+        ['MSSV', 'Tên sinh viên', 'Điểm', 'Tiến độ (%)', 'Vấn đề']
+      ];
+
+      data.studentsNeedingSupport.forEach(student => {
+        supportStudentsData.push([
+          student.mssv,
+          student.name,
+          student.score,
+          student.progress,
+          student.issue
+        ]);
+      });
+
+      const supportStudentsSheet = XLSX.utils.aoa_to_sheet(supportStudentsData);
+      XLSX.utils.book_append_sheet(workbook, supportStudentsSheet, 'Sinh viên cần hỗ trợ');
+    }
+
+    // Add assignment submission details if available
+    if (data.assignmentSubmission) {
+      // Sheet for submitted students
+      if (data.assignmentSubmission.studentsSubmitted && data.assignmentSubmission.studentsSubmitted.length > 0) {
+        const submittedData = [
+          ['Bài tập', data.assignmentSubmission.name],
+          ['Deadline', data.assignmentSubmission.deadline],
+          ['Tổng số sinh viên', data.assignmentSubmission.totalStudents],
+          ['Số sinh viên đã nộp', data.assignmentSubmission.submittedCount],
+          [''],
+          ['MSSV', 'Tên sinh viên', 'Tiến độ (%)', 'Điểm', 'Trạng thái']
+        ];
+
+        data.assignmentSubmission.studentsSubmitted.forEach(student => {
+          submittedData.push([
+            student.mssv,
+            student.name,
+            student.progress,
+            student.score,
+            student.status
+          ]);
+        });
+
+        const submittedSheet = XLSX.utils.aoa_to_sheet(submittedData);
+        XLSX.utils.book_append_sheet(workbook, submittedSheet, 'SV đã nộp bài tập');
+      }
+
+      // Sheet for not submitted students
+      if (data.assignmentSubmission.studentsNotSubmitted && data.assignmentSubmission.studentsNotSubmitted.length > 0) {
+        const notSubmittedData = [
+          ['Bài tập', data.assignmentSubmission.name],
+          ['Deadline', data.assignmentSubmission.deadline],
+          ['Tổng số sinh viên', data.assignmentSubmission.totalStudents],
+          ['Số sinh viên chưa nộp', data.assignmentSubmission.notSubmittedCount],
+          [''],
+          ['MSSV', 'Tên sinh viên', 'Tiến độ (%)', 'Điểm', 'Trạng thái']
+        ];
+
+        data.assignmentSubmission.studentsNotSubmitted.forEach(student => {
+          notSubmittedData.push([
+            student.mssv,
+            student.name,
+            student.progress,
+            student.score,
+            student.status
+          ]);
+        });
+
+        const notSubmittedSheet = XLSX.utils.aoa_to_sheet(notSubmittedData);
+        XLSX.utils.book_append_sheet(workbook, notSubmittedSheet, 'SV chưa nộp bài tập');
+      }
     }
 
     // Export the workbook

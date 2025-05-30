@@ -18,7 +18,11 @@ import {
   selectStudents,
   selectChapters,
   selectAssignments,
-  selectWarnings
+  selectWarnings,
+  selectCommonErrors,
+  selectTopStudents,
+  selectStudentsNeedingSupport,
+  selectCurrentAssignmentSubmission
 } from '@/redux/slices/teacherDashboardSlice';
 import { exportService } from '@/services/exportService';
 
@@ -42,6 +46,10 @@ const CDashboardHeader = () => {
   const chapters = useSelector(selectChapters);
   const assignments = useSelector(selectAssignments);
   const warnings = useSelector(selectWarnings);
+  const commonErrors = useSelector(selectCommonErrors);
+  const topStudents = useSelector(selectTopStudents);
+  const studentsNeedingSupport = useSelector(selectStudentsNeedingSupport);
+  const assignmentSubmission = useSelector(selectCurrentAssignmentSubmission);
 
   // Find current course and semester names
   const currentCourseObj = courseOptions.find(course => course.id === currentCourse);
@@ -82,7 +90,11 @@ const CDashboardHeader = () => {
         currentCourse,
         currentSemester,
         courseOptions,
-        semesterOptions
+        semesterOptions,
+        commonErrors,
+        topStudents,
+        studentsNeedingSupport,
+        assignmentSubmission
       }, fileName);
       
       // Hiển thị thông báo thành công
