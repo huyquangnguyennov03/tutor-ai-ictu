@@ -53,7 +53,8 @@ const ErrorAnalysis: React.FC = () => {
     );
   }
 
-  if (!errors || errors.length === 0) {
+  // Kiểm tra errors có tồn tại và có phải là mảng không
+  if (!errors || !Array.isArray(errors) || errors.length === 0) {
     return (
       <Paper sx={{ mb: 3, p: 3 }}>
         <Typography variant="body1">Không có dữ liệu phân tích lỗi.</Typography>
@@ -61,8 +62,10 @@ const ErrorAnalysis: React.FC = () => {
     );
   }
 
-  // Find the maximum error count for scaling
-  const maxErrorCount = Math.max(...errors.map(error => error.count));
+  // Find the maximum error count for scaling - đảm bảo an toàn
+  const maxErrorCount = errors.length > 0 
+    ? Math.max(...errors.map(error => error.count || 0)) 
+    : 1; // Tránh chia cho 0
 
   return (
     <Paper sx={{ mb: 3 }}>

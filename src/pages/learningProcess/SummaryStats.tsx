@@ -30,14 +30,15 @@ const SummaryStats: React.FC = () => {
     );
   }
 
+  // Sử dụng destructuring với giá trị mặc định để tránh lỗi undefined
   const {
-    totalLearningTime,
-    successfulCompilations,
-    failedCompilations,
-    successRate,
-    dailyAverageTime,
-    mostCommonError = "array index out of bounds"
-  } = summaryStats;
+    totalLearningTime = "0 giờ",
+    successfulCompilations = 0,
+    failedCompilations = 0,
+    successRate = "0%",
+    dailyAverageTime = "0 giờ",
+    mostCommonError = "Không có lỗi"
+  } = summaryStats || {};
 
   return (
     <Grid container spacing={2} sx={{ mb: 3 }}>

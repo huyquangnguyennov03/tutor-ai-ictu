@@ -72,7 +72,8 @@ const ChapterProgress: React.FC = () => {
     );
   }
 
-  if (!chapters || chapters.length === 0) {
+  // Kiểm tra chapters có tồn tại và có phải là mảng không
+  if (!chapters || !Array.isArray(chapters) || chapters.length === 0) {
     return (
       <Paper sx={{ mb: 3, p: 3 }}>
         <Typography variant="body1">Không có thông tin chương học.</Typography>

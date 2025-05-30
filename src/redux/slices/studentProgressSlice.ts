@@ -117,37 +117,47 @@ export const fetchStudentProgress = createAsyncThunk(
         class: student.class || 'Unknown' // Thêm thông tin lớp
       };
 
-      const chapters: ChapterData[] = chaptersResponse.data.chapters.map((chapter: any, index: number) => ({
-        id: chapter.chapterid,
-        title: chapter.name,
-        progress: chapter.completion_rate,
-        quizScore: `${chapter.average_score}/10`,
-        exercisesCompleted: `${Math.floor(chapter.completion_rate / 10)}/${Math.floor(chapter.completion_rate / 10) + 2}`
-      }));
+      // Kiểm tra và xử lý dữ liệu chapters an toàn
+      const chapters: ChapterData[] = chaptersResponse.data && chaptersResponse.data.chapters 
+        ? chaptersResponse.data.chapters.map((chapter: any, index: number) => ({
+            id: chapter.chapterid,
+            title: chapter.name || `Chương ${index + 1}`,
+            progress: chapter.completion_rate || 0,
+            quizScore: `${chapter.average_score || 0}/10`,
+            exercisesCompleted: `${Math.floor((chapter.completion_rate || 0) / 10)}/${Math.floor((chapter.completion_rate || 0) / 10) + 2}`
+          }))
+        : [];
 
-      const errors: ErrorData[] = reportResponse.data.bloom_assessments.map((assessment: any, index: number) => ({
-        name: `Lỗi ${assessment.bloomlevel}`,
-        count: Math.floor(Math.random() * 10) + 1, // Giả định
-        percentage: Math.floor(Math.random() * 30) + 10 // Giả định
-      }));
+      // Kiểm tra và xử lý dữ liệu bloom_assessments an toàn
+      const errors: ErrorData[] = reportResponse.data && reportResponse.data.bloom_assessments 
+        ? reportResponse.data.bloom_assessments.map((assessment: any, index: number) => ({
+            name: `Lỗi ${assessment.bloomlevel || `Loại ${index + 1}`}`,
+            count: Math.floor(Math.random() * 10) + 1, // Giả định
+            percentage: Math.floor(Math.random() * 30) + 10 // Giả định
+          }))
+        : [];
 
-      const suggestions: Suggestion[] = [
-        {
+      // Kiểm tra và xử lý dữ liệu đề xuất an toàn
+      const suggestions: Suggestion[] = [];
+      
+      if (predictionResponse.data && predictionResponse.data.recommendation) {
+        suggestions.push({
           id: 1,
           title: 'Đề xuất học tập',
           content: predictionResponse.data.recommendation,
           type: predictionResponse.data.risk_level === 'An toàn' ? 'success' :
             predictionResponse.data.risk_level === 'Cần cải thiện' ? 'warning' : 'error'
-        }
-      ];
+        });
+      }
 
+      // Xử lý dữ liệu thống kê tổng hợp an toàn
       const summaryStats: SummaryStatsData = {
         totalLearningTime: `${Math.floor(Math.random() * 100) + 20} giờ`, // Giả định
         successfulCompilations: Math.floor(Math.random() * 100) + 50, // Giả định
         failedCompilations: Math.floor(Math.random() * 30) + 10, // Giả định
-        successRate: `${progressResponse.data[0]?.completionrate || 75}%`,
+        successRate: `${progressResponse.data && progressResponse.data[0]?.completionrate || 75}%`,
         dailyAverageTime: `${Math.floor(Math.random() * 3) + 1} giờ`, // Giả định
-        mostCommonError: errors[0]?.name
+        mostCommonError: errors && errors.length > 0 ? errors[0].name : 'Không có lỗi'
       };
 
       return {

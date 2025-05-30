@@ -16,7 +16,8 @@ const ImprovementSuggestions: React.FC = () => {
     );
   }
 
-  if (!suggestions || suggestions.length === 0) {
+  // Kiểm tra suggestions có tồn tại và có phải là mảng không
+  if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
     return (
       <Paper sx={{ mb: 3, p: 3 }}>
         <Typography variant="body1">Không có đề xuất cải thiện.</Typography>

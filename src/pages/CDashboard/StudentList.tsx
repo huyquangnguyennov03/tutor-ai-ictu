@@ -77,17 +77,13 @@ const StudentList: React.FC = () => {
 
   // Navigate to student details page with enhanced information
   const handleViewDetails = (student: Student) => {
-    // Store student data in localStorage to access it on the details page
     localStorage.setItem('selectedStudent', JSON.stringify({
       name: student.name,
       studentId: student.mssv,
-      class: student.class || '', // Thêm thông tin lớp học từ dữ liệu sinh viên
-      courseLevel: 'Lập trình nâng cao', // Default value or get from your data
+      class: student.class || '',
+      courseLevel: 'Lập trình nâng cao',
       updateDate: new Date().toLocaleDateString('vi-VN')
     }));
-
-    // Navigate to student progress page with student ID as parameter
-    // Sử dụng đường dẫn đầy đủ với tiền tố /app
     navigate(`/app/tien-do-hoc-tap/${student.mssv}`);
   };
 
@@ -108,7 +104,7 @@ const StudentList: React.FC = () => {
     )
     : [];
 
-  // Get status color
+  // Get status color based on score (unchanged)
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'đạt chỉ tiêu': return '#4caf50';
@@ -117,6 +113,15 @@ const StudentList: React.FC = () => {
       case 'nguy hiểm': return '#f44336';
       default: return '#757575';
     }
+  };
+
+  // Get progress bar color based on progress percentage
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return '#4caf50'; // Green for high progress
+    if (progress >= 60) return '#2196f3'; // Blue for good progress
+    if (progress >= 40) return '#ffeb3b'; // Yellow for moderate progress
+    if (progress >= 20) return '#ff9800'; // Orange for low progress
+    return '#f44336'; // Red for very low progress
   };
 
   // Render student table
@@ -150,7 +155,7 @@ const StudentList: React.FC = () => {
                           borderRadius: 5,
                           backgroundColor: '#e0e0e0',
                           '& .MuiLinearProgress-bar': {
-                            backgroundColor: student.progressColor
+                            backgroundColor: getProgressColor(student.progress)
                           }
                         }}
                       />

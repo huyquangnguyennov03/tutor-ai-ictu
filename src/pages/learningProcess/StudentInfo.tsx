@@ -20,7 +20,14 @@ const StudentInfo: React.FC = () => {
     return <Paper sx={{ p: 2, mb: 2 }}>Không tìm thấy thông tin sinh viên</Paper>;
   }
 
-  const { name, studentId, courseLevel, updateDate, class: studentClass } = studentInfo;
+  // Sử dụng destructuring với giá trị mặc định để tránh lỗi undefined
+  const { 
+    name = "Chưa có thông tin", 
+    studentId = "Chưa có thông tin", 
+    courseLevel = "Chưa có thông tin", 
+    updateDate = new Date().toLocaleDateString('vi-VN'), 
+    class: studentClass = "Chưa có thông tin" 
+  } = studentInfo;
 
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
