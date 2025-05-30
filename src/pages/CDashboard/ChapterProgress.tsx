@@ -80,13 +80,21 @@ const ChapterProgress: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
                     <Box sx={{ width: 12, height: 12, backgroundColor: '#4caf50', mr: 1 }}></Box>
-                    <Typography variant="caption">Hoàn thành (%)</Typography>
+                    <Typography variant="caption">Tốt (≥85%)</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                    <Box sx={{ width: 12, height: 12, backgroundColor: '#2196f3', mr: 1 }}></Box>
+                    <Typography variant="caption">Khá (≥65%)</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                    <Box sx={{ width: 12, height: 12, backgroundColor: '#ff9800', mr: 1 }}></Box>
+                    <Typography variant="caption">{`Cần cải thiện (<65%)`}</Typography>
                   </Box>
                 </Box>
 
                 {/* Horizontal grid lines */}
                 <Box sx={{ flex: 1, position: 'relative' }}>
-                  {[0, 20, 40, 60, 80, 100].reverse().map((value) => (
+                  {([0, 20, 40, 60, 80, 100].reverse().map((value) => (
                     <Box
                       key={value}
                       sx={{
@@ -113,8 +121,7 @@ const ChapterProgress: React.FC = () => {
                         {value}
                       </Typography>
                     </Box>
-                  ))}
-
+                  )))}
                   {/* Bars */}
                   <Box
                     sx={{
