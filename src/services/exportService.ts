@@ -45,12 +45,20 @@ export const exportService = {
 
     // Add class info sheet
     if (data.classInfo) {
+      // Tính toán tỷ lệ hoạt động từ dữ liệu sinh viên nếu giá trị hiện tại là 0
+      let activityRate = data.classInfo.activityRate;
+      if (activityRate === 0 && data.students && data.students.length > 0) {
+        // Tính tỷ lệ sinh viên có tiến độ > 0
+        const activeStudents = data.students.filter(student => student.progress > 0);
+        activityRate = Math.round((activeStudents.length / data.students.length) * 100);
+      }
+
       const classInfoData = [
         ['Thông tin lớp học', ''],
         ['Tên lớp', data.classInfo.name],
         ['Học kỳ', data.classInfo.semester],
         ['Tổng số sinh viên', data.classInfo.totalStudents],
-        ['Tỷ lệ hoạt động', `${data.classInfo.activityRate}%`],
+        ['Tỷ lệ hoạt động', `${activityRate}%`],
         ['Điểm trung bình', data.classInfo.averageScore],
         ['Tiến độ tổng thể', `${data.classInfo.overallProgress}%`],
         ['Giảng viên', `${data.classInfo.instructor.title} ${data.classInfo.instructor.name}`],
@@ -128,26 +136,75 @@ export const exportService = {
       XLSX.utils.book_append_sheet(workbook, assignmentsSheet, 'Bài tập & Nộp bài');
     }
 
-    // Add warnings sheet
-    if (data.warnings && data.warnings.length > 0) {
-      const warningsData = [
-        ['MSSV', 'Tên sinh viên', 'Lớp', 'Điểm', 'Tiến độ (%)', 'Vấn đề', 'Loại cảnh báo', 'Mức độ', 'Ưu tiên']
-      ];
+    // Add warnings sheet - create from students with issues
+    // Tạo cảnh báo từ danh sách sinh viên có vấn đề
+    const warningsData = [
+      ['MSSV', 'Tên sinh viên', 'Lớp', 'Điểm', 'Tiến độ (%)', 'Vấn đề', 'Mức độ', 'Ưu tiên']
+    ];
 
-      data.warnings.forEach(warning => {
-        warningsData.push([
-          warning.mssv,
-          warning.name,
-          warning.class || '',
-          warning.score,
-          warning.progress,
-          warning.issue,
-          warning.warningtype || '',
-          warning.severity || '',
-          warning.priority
-        ]);
+    // Tạo cảnh báo từ sinh viên có điểm thấp
+    const lowScoreStudents = data.students.filter(student => student.score < 2);
+    lowScoreStudents.forEach(student => {
+      warningsData.push([
+        student.mssv,
+        student.name,
+        student.class || '',
+        student.score,
+        student.progress,
+        'Điểm số thấp, cần cải thiện',
+        'Trung bình',
+        'cảnh báo'
+      ]);
+    });
+
+    // Tạo cảnh báo từ sinh viên có tiến độ thấp
+    const lowProgressStudents = data.students.filter(student => student.progress < 30 && !lowScoreStudents.includes(student));
+    lowProgressStudents.forEach(student => {
+      warningsData.push([
+        student.mssv,
+        student.name,
+        student.class || '',
+        student.score,
+        student.progress,
+        'Tiến độ học tập chậm',
+        'Thấp',
+        'thông tin'
+      ]);
+    });
+
+    // Thêm cảnh báo từ danh sách cảnh báo gốc nếu có
+    if (data.warnings && data.warnings.length > 0) {
+      // Lọc cảnh báo chỉ của lớp hiện tại
+      const currentClassWarnings = data.warnings.filter(warning => {
+        return data.students.some(student => student.mssv === warning.mssv);
       });
 
+      currentClassWarnings.forEach(warning => {
+        // Tìm thông tin sinh viên từ danh sách sinh viên để lấy điểm và tiến độ chính xác
+        const studentInfo = data.students.find(student => student.mssv === warning.mssv);
+        
+        // Chỉ thêm nếu chưa có trong danh sách
+        const exists = warningsData.some(row => 
+          row[0] === warning.mssv && row[5] === warning.issue
+        );
+        
+        if (!exists) {
+          warningsData.push([
+            warning.mssv,
+            warning.name,
+            warning.class || '',
+            studentInfo ? studentInfo.score : warning.score,
+            studentInfo ? studentInfo.progress : warning.progress,
+            warning.issue,
+            warning.severity || 'Trung bình',
+            warning.priority
+          ]);
+        }
+      });
+    }
+
+    // Chỉ tạo sheet nếu có dữ liệu cảnh báo (ngoài header)
+    if (warningsData.length > 1) {
       const warningsSheet = XLSX.utils.aoa_to_sheet(warningsData);
       XLSX.utils.book_append_sheet(workbook, warningsSheet, 'Cảnh báo & Nhắc nhở');
     }
@@ -171,18 +228,26 @@ export const exportService = {
       XLSX.utils.book_append_sheet(workbook, errorsSheet, 'Lỗi biên dịch phổ biến');
     }
 
-    // Add top students sheet
+    // Add top students sheet - filter for current class only
     if (data.topStudents && data.topStudents.length > 0) {
       const topStudentsData = [
         ['MSSV', 'Tên sinh viên', 'Điểm', 'Tiến độ (%)']
       ];
 
-      data.topStudents.forEach(student => {
+      // Lọc sinh viên xuất sắc chỉ của lớp hiện tại
+      const currentClassTopStudents = data.topStudents.filter(student => {
+        return data.students.some(s => s.mssv === student.mssv);
+      });
+
+      currentClassTopStudents.forEach(student => {
+        // Tìm thông tin sinh viên từ danh sách sinh viên để lấy điểm và tiến độ chính xác
+        const studentInfo = data.students.find(s => s.mssv === student.mssv);
+        
         topStudentsData.push([
           student.mssv,
           student.name,
-          student.score,
-          student.progress
+          studentInfo ? studentInfo.score : student.score,
+          studentInfo ? studentInfo.progress : student.progress
         ]);
       });
 
@@ -190,18 +255,26 @@ export const exportService = {
       XLSX.utils.book_append_sheet(workbook, topStudentsSheet, 'Sinh viên xuất sắc');
     }
 
-    // Add students needing support sheet
+    // Add students needing support sheet - filter for current class only
     if (data.studentsNeedingSupport && data.studentsNeedingSupport.length > 0) {
       const supportStudentsData = [
         ['MSSV', 'Tên sinh viên', 'Điểm', 'Tiến độ (%)', 'Vấn đề']
       ];
 
-      data.studentsNeedingSupport.forEach(student => {
+      // Lọc sinh viên cần hỗ trợ chỉ của lớp hiện tại
+      const currentClassStudentsNeedingSupport = data.studentsNeedingSupport.filter(student => {
+        return data.students.some(s => s.mssv === student.mssv);
+      });
+
+      currentClassStudentsNeedingSupport.forEach(student => {
+        // Tìm thông tin sinh viên từ danh sách sinh viên để lấy điểm và tiến độ chính xác
+        const studentInfo = data.students.find(s => s.mssv === student.mssv);
+        
         supportStudentsData.push([
           student.mssv,
           student.name,
-          student.score,
-          student.progress,
+          studentInfo ? studentInfo.score : student.score,
+          studentInfo ? studentInfo.progress : student.progress,
           student.issue
         ]);
       });
