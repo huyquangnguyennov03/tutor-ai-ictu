@@ -43,7 +43,7 @@ export default function Search() {
               <SearchOutlined />
             </InputAdornment>
           }
-          placeholder={'Tìm mã vận đơn'}
+          placeholder={'Tìm mã sinh viên'}
           aria-describedby="header-search-text"
           inputProps={{
             'aria-label': 'weight',
